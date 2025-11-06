@@ -1,0 +1,35 @@
+name: Update Trade Insights
+
+on:
+  push:
+    paths:
+      - 'data/raw/*.txt'
+  workflow_dispatch:
+
+jobs:
+  process-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas
+
+      - name: Process trade data
+        run: |
+          python scripts/main.py
+
+      - name: Commit processed data
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+          git add data/processed/*
+          git commit -m "Atualização automática de dados processados"
+          git push
