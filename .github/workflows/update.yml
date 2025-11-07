@@ -6,6 +6,9 @@ on:
       - 'data/raw/*.txt'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   process-data:
     runs-on: ubuntu-latest
@@ -27,14 +30,11 @@ jobs:
         run: |
           python scripts/main.py
 
-      - name: Commit processed data
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push processed data
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git fetch origin main
-          git add data/processed/* || echo "Nenhum arquivo novo"
+          git add data/processed/*
           git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
           git pull --rebase origin main || echo "Sem rebase necessário"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado (branch já atualizada)"
+          git push origin main
