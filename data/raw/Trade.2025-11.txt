@@ -387,7 +387,10 @@ Logging started 2025-11-02
 [09:42:29] <System> You can disable receiving these messages, by a setting in your profile.
 [09:42:29] <System> View the full Trade Chat Etiquette section with the Game Rules at https://wurm.gg/rules
 [09:44:51] <Trolgarr> (Cad) WTS  [supreme birchwood dirty casket (Cadence) QL:44.0 DMG:0.0 WT:5.0 ][rare birchwood dirty casket (Cadence) QL:54.0 DMG:0.0 WT:5.0 ][rare birchwood dirty casket (Cadence) QL:46.0 DMG:0.0 WT:5.0 ]
-[09:50:38] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence : In stock - stone (1k) slate (2k) sandstone (1k) marble (1k) mortar (1k) 100 concrete. Larger orders are accepted. Message me with your needs.
+[09:50:38] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence :
+ In stock - stone (1k) slate (2k) sandstone (1k)
+ marble (1k) mortar (1k) 100 concrete. Larger orders
+ are accepted. Message me with your needs.
 [09:50:43] <Winterz> (Cad) PC [rare oakenwood rope tool QL:60.2021 DMG:0.0 WT:1.5 BoTD 102]
 [09:51:04] <Rihanna> (Har) WTS marble bricks, 4s/k
 [09:52:41] <Tribau> (Har) WTS Ships – Knarr, Caravel, Corbita & Cog (any wood type) Free delivery to all coasts — handcrafted with care, fast and reliable service! Taking custom orders — PM me anytime :)
@@ -411,7 +414,10 @@ Logging started 2025-11-02
 [10:24:21] <Heartless> (Har) PC 80ql arrow bundle
 [10:29:48] <Moks> (Cad) WTS [rare null Cadence old treasure map QL:57.0 DMG:0.0 WT:0.01 ] [common wheat sleep powder QL:54.1319 DMG:0.0 WT:0.025 ] [common lavenderwood branch QL:26.4069 DMG:0.0 WT:2.0 ] [rare silver ore fragment [1/26] QL:18.105452 DMG:0.0 WT:0.769 ]
 [10:30:21] <Dgar> (Cad) wts => Champion Mature Male Mountain Lion (1s), a good sparring partner to train your shield skills. Can be delivered anywhere with extra taxes.
-[10:32:02] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence : In stock - stone (1k) slate (2k) sandstone (1k) marble (1k) mortar (1k) 100 concrete. Larger orders are accepted. Message me with your needs.
+[10:32:02] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence :
+ In stock - stone (1k) slate (2k) sandstone (1k)
+ marble (1k) mortar (1k) 100 concrete. Larger orders
+ are accepted. Message me with your needs.
 [10:36:10] <Monarca> (Har) WTS [rare cotton meditation rug QL:18.2705 DMG:0.0 WT:1.5 CoC 95]
 [10:36:24] <Nocturnality> (Mel) PC Sleep pwoder
 [10:37:06] <Nocturnality> (Mel) PC good to know thanks
@@ -484,7 +490,10 @@ Logging started 2025-11-02
 [12:06:16] <Phawkx> (Cad) WTB [common silver staff QL:87.0013 DMG:4.3618 WT:3.0 Nim 101 • LT 93 • MD • CoC 92 • RStV • MS 94] same casts silver staff
 [12:06:48] <Evzenblade> (Har) WTS Affinity drinks 99QL ** 110h+ Per sip **/ Full Barrels 60h+ High discounts/  Kahvesi and Coffe 99QL - to enjoy Bonus days grind PM ME !
 [12:09:53] <Wollywolly> (Mel) wts [common null large rat pelt QL:100.0 DMG:2.0101008 WT:0.2 CoC 72][rare lindenwood rope tool QL:25.4475 DMG:0.0 WT:1.5 ][rare null heap of sand QL:1.0 DMG:0.0 WT:20.0 ]
-[12:10:55] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence : In stock - stone (1k) slate (2k) sandstone (1k) marble (1k) mortar (1k) 100 concrete. Larger orders are accepted. Message me with your needs.
+[12:10:55] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence :
+ In stock - stone (1k) slate (2k) sandstone (1k)
+ marble (1k) mortar (1k) 100 concrete. Larger orders
+ are accepted. Message me with your needs.
 [12:15:18] <Shampola> (Cad) pc [common wheat sleep powder QL:52.512566 DMG:0.0 WT:0.025 ]
 [12:15:53] <Tribau> (Har) WTS Ships – Knarr, Caravel, Corbita & Cog (any wood type) Free delivery to all coasts — handcrafted with care, fast and reliable service! Taking custom orders — PM me anytime :)
 [12:16:01] <Solomeya> (Har) PC ~80c
@@ -1689,7 +1698,8 @@ Logging started 2025-11-05
 [17:00:15] <Kainef> (Cad) WTS [common iron huge axe QL:94.3871 DMG:0.0 WT:2.5 WoA 94]
 [17:00:16] <Solomeya> (Har) PC 60-70s
 [17:01:49] <Kanba> (Har) WTS RARE Wagon cedarwood pm // stone brick in bulk 1k/2s 10k/19s 20k/38s (delivery in all isles)
-[17:02:03] <Dallegaming> (Cad) wts large crate 10c bulk dirt sand 2s/k 1k mortar  1k/3s 1k clay 1k/1s bulk tar 1k/1s  delivery on cat and har
+[17:02:03] <Dallegaming> (Cad) wts large crate 10c bulk dirt sand 2s/k 1k mortar  1k/3s 1k clay 1k/1s bulk tar 1k/1s 
+ delivery on cat and har
 [17:02:42] <Trybau> (Har) pc [common null soul crystal [dog] QL:65.35994 DMG:0.0 WT:0.81 ]
 [17:03:58] <Vulnere> (Cad) WTS [rare iron lump QL:34.5 DMG:0.0 WT:1.0 ][rare iron lump QL:30.2373 DMG:0.0 WT:1.0 ]
 [17:06:23] <Axeltristy> (Har) PC 90ql hatchet with botd 100
@@ -1717,7 +1727,8 @@ Logging started 2025-11-05
 [17:28:36] <Markinhos> (Har) WTB Bulk LOG QL 90+
 [17:29:49] <Ennae> (Mel) WTS [common silver fang necklace QL:50.3085 DMG:0.0 WT:0.4 Nolo 101 • RAF]
 [17:29:58] <Axeltristy> (Har) pc [rare null stone shards QL:61.4397 DMG:0.0 WT:20.0 ]x5    [rare glimmersteel lump QL:59.2447 DMG:0.0 WT:0.234 ]
-[17:30:02] <Dallegaming> (Cad) wts large crate 10c bulk dirt sand 2s/k 1k mortar  1k/3s 1k clay 1k/1s bulk tar 1k/1s  delivery on cat and har
+[17:30:02] <Dallegaming> (Cad) wts large crate 10c bulk dirt sand 2s/k 1k mortar  1k/3s 1k clay 1k/1s bulk tar 1k/1s 
+ delivery on cat and har
 [17:30:42] <Chudotvorets> (Cad) WTS [rare iron horse shoe QL:92.1088 DMG:0.0 WT:0.5 ]
 [17:31:04] <Tribau> (Har) wtb 1 HH moltem draft 4
 [17:33:26] <Vladi> (Mel) WTS [rare iron large axe head QL:80.676 DMG:0.0 WT:1.0 RStV][common adamantine open helm QL:54.3234 DMG:0.0 WT:1.1 ][rare iron pickaxe head QL:80.5595 DMG:0.0 WT:1.0 ]
@@ -1759,7 +1770,8 @@ Logging started 2025-11-05
 [18:39:56] <System> View the full Trade Chat Etiquette section with the Game Rules at https://wurm.gg/rules
 [18:41:07] <Monarca> (Har) PC troll king blood
 [18:42:04] <Carli> (Cad) WTB rare leather
-[18:42:51] <Dallegaming> (Cad) wts large crate 10c bulk 5k dirt sand 2s/k 1k mortar  1k/3s 1k clay 1k/1s bulk tar 1k/1s  delivery on cat and har
+[18:42:51] <Dallegaming> (Cad) wts large crate 10c bulk 5k dirt sand 2s/k 1k mortar  1k/3s 1k clay 1k/1s bulk tar 1k/1s 
+ delivery on cat and har
 [18:43:19] <Dollywolly> (Mel) pc [common chestnut corbita QL:13.351669 DMG:0.0 WT:1400.0 ]
 [18:45:41] <Monarca> (Har) PC corbita from 3s up to 5s improved
 [18:46:08] <Dollywolly> (Mel) pc ty
@@ -1768,7 +1780,10 @@ Logging started 2025-11-05
 [19:12:17] <Salos> (Har) pc [supreme copper small shield QL:92.18984 DMG:0.0 WT:1.5 RStF]
 [19:18:52] <Yzkskss> (Cad) PC For imping 90ql in masonry
 [19:19:28] <Kakalium> (Har) Wts _________Affinity Drink   ________ Wts   Cofee Ql 99 _______ Enjoy The Exp Bonus!!! ________ https://tinyurl.com/Affinity-Drink  ________(price list)
-[19:23:51] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence : In stock - stone (1k) slate (2k) sandstone (1k) marble (1k) mortar (1k) 100 concrete. Larger orders are accepted. Message me with your needs.
+[19:23:51] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence :
+ In stock - stone (1k) slate (2k) sandstone (1k)
+ marble (1k) mortar (1k) 100 concrete. Larger orders
+ are accepted. Message me with your needs.
 [19:32:23] <Som> (Har) wtb x2 pumpkin terror frags. Pm offer please
 [19:35:56] <Moricar> (Cad) WTS RED ALERT: NEW CARPET COLLECTION INCOMING. Keep a sharp eye on trade chat for the official release. In the meantime, check out the revamped Forum Post and all our prior sets! https://forum.wurmonline.com/index.php?/topic/196266-moricars-tailor-and-dye/
 [19:39:44] <Mortanius> (Mel) WTS [rare leather sealed water skin [root beer] QL:40.8742 DMG:0.0 WT:2.75 ]
@@ -1798,7 +1813,10 @@ Logging started 2025-11-05
 [20:14:47] <Salos> (Har) wtb [common iron pumpkin lantern fragment [1/5] QL:62.5265 DMG:0.0 WT:0.16 ]
 [20:16:01] <Ahteu> (Har) WTS [common glimmersteel lump QL:88.1091 DMG:0.0 WT:0.344 ] 1.5S
 [20:20:35] <Pshootr> (Har) WTB Appaloosa 4 Speed
-[20:23:44] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence : In stock - stone (1k) slate (2k) sandstone (1k) marble (1k) mortar (1k) 100 concrete. Larger orders are accepted. Message me with your needs.
+[20:23:44] <Kardlef> (Cad) WTS Bricks & Mortar via wagoner - Cadence :
+ In stock - stone (1k) slate (2k) sandstone (1k)
+ marble (1k) mortar (1k) 100 concrete. Larger orders
+ are accepted. Message me with your needs.
 [20:26:04] <Kohat> (Har) wts [common iron needle QL:88.0199 DMG:0.0 WT:0.005 BoTD 102] 3.5s
 [20:29:30] <Xerxzie> (Cad) WTS 91ql iron plate armor set 4s, 91ql steel tools and imps 1s, [rare steel hatchet QL:91.301 DMG:0.0 WT:2.5 RStV], rift points 1s/100
 [20:32:23] <Hiyorium> (Har) WTS rare plate set(with dragon helm skin 40s) WTS [rare null unfinished kiln QL:1.23742 DMG:0.0 WT:70.0 ] WTB rare winged shoulder pad
@@ -2314,7 +2332,10 @@ Logging started 2025-11-07
 [18:48:11] <Kelohe> (Har) WTB plank or shaft lingoberry
 [18:49:11] <Quelliz> (Cad) WTS Kahvesi 80ql+ (0.8s) get your skill grind efficency up! Did you know you gain 10m sleep bonus when you drink coffee in the first 10 minutes you log in?, WTS Weaponsmithing services (70ql), and Blacksmithing services (50Ql), DM me for offers.
 [18:50:37] <Baconbiff> (Cad) WTS [rare walnut unfinished hitching post QL:28.1865 DMG:0.0 WT:68.2 ] 5s 
-[18:52:26] <Pobesnelimrmot> (Cad) wts Iron Lumps for Sale – Available in 64kg lumps, sent directly to your mailbox or via Wagoneer for hassle-free delivery.  96 QL   60c per 64kg 93 QL   40c per 64kg
+[18:52:26] <Pobesnelimrmot> (Cad) wts Iron Lumps for Sale – Available in 64kg lumps, sent directly to your mailbox or via Wagoneer for hassle-free delivery.
+ 
+ 96 QL   60c per 64kg
+ 93 QL   40c per 64kg
 [18:59:03] <Whiteshadowtas> (Cad) WTB anyone have ql95+ steel lump for sale?
 [19:00:13] <Laplace> (Har) WTS [rare leather toolbelt QL:90.0215 DMG:0.0 WT:1.0 ][rare clay clay QL:56.5287 DMG:0.0 WT:2.0 ]
 [19:01:57] <Oxmoggxx> (Mel) PC what is the Value of a 90+ Ql Knarr
