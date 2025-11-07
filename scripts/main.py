@@ -1,24 +1,22 @@
 import os
 import pandas as pd
 import re
-from pathlib import Path
 
-# === 0. Diretórios base com caminhos absolutos ===
-BASE_DIR = Path(__file__).resolve().parent.parent  # raiz do projeto
-RAW_DIR = BASE_DIR / "data" / "raw"
-PROCESSED_DIR = BASE_DIR / "data" / "processed"
-OUTPUT_FILE = PROCESSED_DIR / "trade_data_clean.csv"
+RAW_DIR = "data/raw"
+PROCESSED_DIR = "data/processed"
+CSV_FILE = os.path.join(PROCESSED_DIR, "trade_data_clean.csv")
+JS_FILE = os.path.join(PROCESSED_DIR, "data.js")
 
-# === 1. Localizar o arquivo mais recente no formato Trade.YYYY-MM.txt ===
+# === 1. Localizar o arquivo mais recente ===
 def get_latest_trade_file():
     trade_files = [
         f for f in os.listdir(RAW_DIR)
         if re.match(r"Trade\.\d{4}-\d{2}\.txt$", f)
     ]
     if not trade_files:
-        raise FileNotFoundError("❌ Nenhum arquivo Trade.YYYY-MM.txt encontrado em data/raw/")
+        raise FileNotFoundError("Nenhum arquivo Trade.YYYY-MM.txt encontrado em data/raw/")
     trade_files.sort(reverse=True)
-    return RAW_DIR / trade_files[0]
+    return os.path.join(RAW_DIR, trade_files[0])
 
 # === 2. Ler arquivo TXT ===
 def load_trade_data(filepath):
@@ -28,7 +26,7 @@ def load_trade_data(filepath):
         df = pd.read_csv(filepath, sep=None, engine="python", on_bad_lines="skip")
     return df
 
-# === 3. Limpeza e padronização ===
+# === 3. Limpeza ===
 def clean_trade_data(df):
     df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
 
@@ -50,6 +48,7 @@ def clean_trade_data(df):
             if match:
                 col_map[key] = match[0]
                 break
+
     df = df.rename(columns=col_map)
 
     for key in possible_cols.keys():
@@ -73,7 +72,7 @@ def clean_trade_data(df):
                 return "▼"
             else:
                 return "—"
-        except Exception:
+        except:
             return "—"
 
     df["indicador"] = df.apply(get_indicator, axis=1)
@@ -91,27 +90,39 @@ def clean_trade_data(df):
         lambda x: x if x in conf_vals else "Média"
     )
 
-    df = df[
-        ["item", "categoria", "preco_2024", "preco_2025",
-         "variacao", "indicador", "confianca", "venda"]
-    ]
+    df = df[[
+        "item", "categoria", "preco_2024", "preco_2025",
+        "variacao", "indicador", "confianca", "venda"
+    ]]
 
     return df
 
-# === 4. Salvar CSV processado ===
-def save_clean_data(df):
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8-sig")
-    print(f"✅ Arquivo salvo em: {OUTPUT_FILE} ({len(df)} linhas)")
-    print(f"📁 Local absoluto: {OUTPUT_FILE.resolve()}")
+# === 4. Salvar CSV ===
+def save_csv(df):
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    df.to_csv(CSV_FILE, index=False)
+    print(f"✅ CSV salvo em: {CSV_FILE} ({len(df)} linhas)")
 
-# === 5. Execução principal ===
+# === 5. Salvar JS ===
+def save_js(df):
+    js_content = "const data = [\n"
+    for _, row in df.iterrows():
+        js_row = [str(x).replace("'", "\\'") for x in row.tolist()]
+        js_content += f"  {js_row},\n"
+    js_content += "];\n"
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    with open(JS_FILE, "w", encoding="utf-8") as f:
+        f.write(js_content)
+    print(f"✅ JS salvo em: {JS_FILE}")
+
+# === 6. Execução principal ===
 def main():
     trade_file = get_latest_trade_file()
     print(f"📦 Lendo arquivo: {trade_file}")
     df = load_trade_data(trade_file)
     clean_df = clean_trade_data(df)
-    save_clean_data(clean_df)
+    save_csv(clean_df)
+    save_js(clean_df)
 
 if __name__ == "__main__":
     main()
