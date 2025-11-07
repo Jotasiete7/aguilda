@@ -92,6 +92,7 @@
     <h1>A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
     <button class="toggle" onclick="document.body.classList.toggle('dark')">Modo Escuro</button>
   </header>
+
   <div class="container">
     <!-- === AVISO + BOTÃO ANÁLISE DE ARMAS === -->
     <div class="weapons-box">
@@ -115,17 +116,14 @@
         <option value="Média">Média</option>
         <option value="Baixa">Baixa</option>
       </select>
-      <button onclick="showOpportunities()">Oportunidades de Comp  <button class="recipes" onclick="window.open('recipes.html', '_blank')">
-        Recipes Guide
-      </button>
+      <button onclick="showOpportunities()">Oportunidades de Compra</button>
+      <button class="recipes" onclick="window.open('recipes.html', '_blank')">Recipes Guide</button>
     </div>
 
     <div class="grid">
       <div class="card">
         <h3>Variação de Preços (Top 10)</h3>
-        <div class="chart-container">
-          <canvas id="chart"></canvas>
-        </div>
+        <div class="chart-container"><canvas id="chart"></canvas></div>
       </div>
       <div class="card">
         <h3>Itens em Alta</h3>
@@ -162,20 +160,20 @@
     </div>
   </div>
 
-  <script>
-    // === TODOS OS DADOS DA GUILDA (COMPLETO) ===
+  <!-- === IMPORTAÇÃO DE DADOS === -->
   <script src="data/processed/data.js"></script>
 
-    // === CATEGORIAS ===
+  <!-- === LÓGICA DO DASHBOARD === -->
+  <script>
     const categories = [...new Set(data.map(row => row[1]))].sort();
     const categorySelect = document.getElementById("category");
     categories.forEach(cat => {
       const opt = document.createElement("option");
-      opt.value = cat; opt.textContent = cat;
+      opt.value = cat;
+      opt.textContent = cat;
       categorySelect.appendChild(opt);
     });
 
-    // === RENDER TABELA ===
     function renderTable(filtered = data) {
       const tbody = document.getElementById("tableBody");
       tbody.innerHTML = "";
@@ -184,9 +182,10 @@
         row.forEach((cell, i) => {
           const td = document.createElement("td");
           if (i === 5) {
-            td.innerHTML = cell === "▲" ? `<span class="up">${cell}</span>` :
-                          cell === "▼" ? `<span class="down">${cell}</span>` :
-                          `<span class="stable">${cell}</span>`;
+            td.innerHTML =
+              cell === "▲" ? `<span class='up'>${cell}</span>` :
+              cell === "▼" ? `<span class='down'>${cell}</span>` :
+              `<span class='stable'>${cell}</span>`;
           } else if (i >= 2 && i <= 3 || i === 7) {
             td.textContent = cell > 1000 ? (cell/100).toFixed(2) + "s" : cell + "c";
           } else {
@@ -198,7 +197,6 @@
       });
     }
 
-    // === FILTROS ===
     function filterTable() {
       const search = document.getElementById("search").value.toLowerCase();
       const cat = document.getElementById("category").value;
@@ -214,10 +212,9 @@
       updateUpItems(filtered);
     }
 
-    // === GRÁFICO ===
     function updateChart(items) {
       const ctx = document.getElementById("chart").getContext("2d");
-      const top10 = items.sort((a,b) => b[4] - a[4]).slice(0,10);
+      const top10 = [...items].sort((a,b) => b[4] - a[4]).slice(0,10);
       if (window.myChart) window.myChart.destroy();
       window.myChart = new Chart(ctx, {
         type: 'bar',
@@ -226,7 +223,11 @@
           datasets: [{
             label: 'Variação %',
             data: top10.map(r => r[4]),
-            backgroundColor: top10.map(r => r[5] === "▲" ? '#2e8b57' : r[5] === "▼" ? '#c0392b' : '#3498db'),
+            backgroundColor: top10.map(r =>
+              r[5] === "▲" ? '#2e8b57' :
+              r[5] === "▼" ? '#c0392b' :
+              '#3498db'
+            ),
             borderRadius: 6
           }]
         },
@@ -234,14 +235,16 @@
       });
     }
 
-    // === ITENS EM ALTA ===
     function updateUpItems(items) {
       const up = items.filter(r => r[5] === "▲").slice(0, 8);
       const container = document.getElementById("upItems");
-      container.innerHTML = up.map(r => `<p><strong>${r[0]}</strong>: +${r[4]}% → ${r[3] > 1000 ? (r[3]/100).toFixed(2)+'s' : r[3]+'c'}</p>`).join("");
+      container.innerHTML = up.map(r =>
+        `<p><strong>${r[0]}</strong>: +${r[4]}% → ${
+          r[3] > 1000 ? (r[3]/100).toFixed(2)+'s' : r[3]+'c'
+        }</p>`
+      ).join("");
     }
 
-    // === OPORTUNIDADES ===
     function showOpportunities() {
       const opps = data.filter(r => r[5] === "▼" && r[6] === "Alta");
       const list = document.getElementById("oppList");
@@ -251,21 +254,16 @@
       document.getElementById("opportunities").style.display = "block";
     }
 
-    // === ORDENAÇÃO ===
     function sortTable(n) {
       const isNum = n >= 2 && n <= 4;
-      data.sort((a, b) => {
-        if (isNum) return a[n] - b[n];
-        return a[n].localeCompare(b[n]);
-      });
+      data.sort((a, b) => isNum ? a[n] - b[n] : a[n].localeCompare(b[n]));
       filterTable();
     }
 
-    // === INIT ===
+    // === INICIALIZAÇÃO ===
     renderTable();
     updateChart(data);
     updateUpItems(data);
   </script>
 </body>
-
 </html>
