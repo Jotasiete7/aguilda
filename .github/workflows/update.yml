@@ -33,3 +33,4 @@ jobs:
           git add data/processed/*
           git commit -m "Atualização automática de dados processados" || echo "Nada para commitar"
           git push
+
