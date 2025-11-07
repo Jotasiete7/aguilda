@@ -20,10 +20,12 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pandas
+        run: |
+          pip install pandas
 
       - name: Process trade data
-        run: python scripts/main.py
+        run: |
+          python scripts/main.py
 
       - name: Commit processed data
         run: |
