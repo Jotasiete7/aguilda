@@ -2232,3 +2232,12 @@ Logging started 2025-11-06
 [22:00:36] <Madlya> (Har) wts sold
 [22:02:58] <Laplace> (Har) WTB cast 100 CoC
 [22:06:01] <Tribau> (Har) wts [common leather black-winged shoulder pad QL:84.246 DMG:0.0 WT:0.3 ] 50c each
+Logging started 2025-11-07
+[17:10:01] <System> This is the Trade channel. 
+[17:10:01] <System> Only messages starting with WTB, WTS, WTT, PC or @ are allowed. 
+[17:10:01] <System> Please PM the person if you are interested in the Item.
+[17:10:01] <System> You can also use @<name> to send a reply in this channel to <name>.
+[17:10:01] <System> You can disable receiving these messages, by a setting in your profile.
+[17:10:01] <System> View the full Trade Chat Etiquette section with the Game Rules at https://wurm.gg/rules
+[17:15:03] <Dondersteen> (Cad) WTS - [rare oakenwood mallet QL:94.4566 DMG:0.0 WT:1.2 WoA 100 • CoC 106][rare iron large axe head QL:35.7742 DMG:0.0 WT:1.0 RSeJ] & https://forum.wurmonline.com/index.php?/topic/202688-dondersteens-archaeology-shop-woods-fragments/&tab=comments#comment-2007203
+[17:17:14] <Ennae> (Mel) WTS [common silver fang necklace QL:50.3085 DMG:0.0 WT:0.4 Nolo 101 • RAF]
