@@ -27,7 +27,7 @@ jobs:
         run: |
           python scripts/main.py
 
-            - name: Commit processed data
+      - name: Commit processed data
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
