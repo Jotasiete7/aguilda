@@ -27,7 +27,7 @@ jobs:
         run: |
           python scripts/main.py
 
-            - name: Commit processed data
+      - name: Commit processed data
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -36,6 +36,4 @@ jobs:
           git add data/processed/* || echo "Nenhum arquivo novo"
           git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
           git pull --rebase origin main || echo "Sem rebase"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
-
-
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado"
