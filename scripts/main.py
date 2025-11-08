@@ -5,135 +5,116 @@ from glob import glob
 
 RAW_DIR = "data/raw"
 PROCESSED_DIR = "data/processed"
-CSV_OUT = os.path.join(PROCESSED_DIR, "trade_data_clean.csv")
-JS_OUT = os.path.join(PROCESSED_DIR, "data.js")
+OUTPUT_FILE = os.path.join(PROCESSED_DIR, "trade_data_clean.csv")
 
-# ============================
-# 1. FUNÇÕES AUXILIARES
-# ============================
+# === 1. Encontrar arquivos válidos ===
+def get_trade_files():
+    files = sorted(glob(os.path.join(RAW_DIR, "Trade.*.txt")))
+    if not files:
+        raise FileNotFoundError("Nenhum arquivo Trade.YYYY-MM.txt encontrado em data/raw/")
+    print(f"📦 Arquivos detectados: {len(files)}")
+    return files
 
-def parse_value(text):
-    """Converte 1s50c → 150c / 1.5s → 150c / 120c → 120c (retorna em cobre)"""
-    text = str(text).lower().strip()
-    silver = re.findall(r"(\d+(?:\.\d+)?)s", text)
-    copper = re.findall(r"(\d+(?:\.\d+)?)c", text)
-    total = 0
-    if silver:
-        total += float(silver[0]) * 100
-    if copper:
-        total += float(copper[0])
-    if total == 0 and text.isdigit():
-        total = float(text)
-    return round(total, 2) if total > 0 else None
+# === 2. Detectar se é tabulado ou cru ===
+def is_tabulated(file_path):
+    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+        for _ in range(10):
+            line = f.readline()
+            if "," in line or "\t" in line:
+                return True
+    return False
 
-def categorize_item(item):
-    item = item.lower()
-    if any(k in item for k in ["adamantine", "adam lump"]):
-        return "Adamantine"
-    if any(k in item for k in ["glimmersteel", "glimmer lump"]):
-        return "Glimmersteel"
-    if any(k in item for k in ["seryll"]):
-        return "Seryll"
-    if any(k in item for k in ["rare", "supreme", "fantastic"]):
-        return "Raros"
-    if any(k in item for k in ["hammer", "sword", "axe", "bow"]):
-        return "Armas"
-    if any(k in item for k in ["horse", "wagon", "cart", "ship"]):
-        return "Transportes"
-    if any(k in item for k in ["armor", "chain", "plate", "helmet"]):
-        return "Armaduras"
-    if any(k in item for k in ["dye", "paint"]):
-        return "Tintas"
-    if any(k in item for k in ["rune", "fragment", "shard"]):
-        return "Runas / Fragmentos"
-    return "Outros"
-
-def confidence_level(count):
-    if count >= 30:
-        return "Alta"
-    elif count >= 10:
-        return "Média"
-    return "Baixa"
-
-# ============================
-# 2. PROCESSAMENTO PRINCIPAL
-# ============================
-
-def main():
-    os.makedirs(PROCESSED_DIR, exist_ok=True)
-
-    trade_files = sorted(glob(os.path.join(RAW_DIR, "Trade.2025-*.txt")))
-    if not trade_files:
-        print("❌ Nenhum arquivo Trade.2025-XX.txt encontrado em data/raw/")
-        return
-
-    print(f"📦 Arquivos detectados: {len(trade_files)}")
-
-    registros = []
-    for file in trade_files:
-        print(f"→ Lendo {os.path.basename(file)}...")
-        with open(file, "r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                parts = [p.strip() for p in line.split("|")]
-                if len(parts) < 4:
-                    continue
-                timestamp, tipo, player, item = parts[:4]
-                if tipo.upper() not in ["WTB", "WTS", "PC"]:
-                    continue
-                registros.append({
-                    "timestamp": timestamp.strip(),
-                    "type": tipo.upper(),
-                    "player": player.strip(),
-                    "item": item.strip().lower()
-                })
-
-    df = pd.DataFrame(registros)
+# === 3. Parser para arquivos tabulados ===
+def parse_tabulated(file_path):
+    print(f"→ Lendo tabulado: {os.path.basename(file_path)}")
+    df = pd.read_csv(file_path, sep=None, engine="python", on_bad_lines="skip")
+    if "item" not in df.columns:
+        df.columns = [c.strip().lower() for c in df.columns]
     print(f"✅ Linhas importadas: {len(df)}")
+    return df
 
-    # Limpeza
-    df["item"] = df["item"].str.replace(r"[^a-zA-Z0-9\s'/-]", " ", regex=True).str.strip()
-    df = df[df["item"].str.len() > 2]
+# === 4. Parser para logs crus ===
+def parse_raw(file_path):
+    print(f"→ Lendo bruto: {os.path.basename(file_path)}")
+    pattern = re.compile(r"(\d{4}-\d{2}-\d{2}.*?)\s*\|\s*(WTB|WTS|PC)\s*\|\s*([^|]+)\s*\|\s*(.*)", re.IGNORECASE)
+    records = []
+    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            m = pattern.match(line)
+            if not m:
+                continue
+            timestamp, tipo, player, item = m.groups()
+            item = clean_item(item)
+            if item:
+                records.append([timestamp, tipo.upper(), player.strip(), item])
+    df = pd.DataFrame(records, columns=["timestamp", "type", "player", "item"])
+    print(f"✅ Linhas importadas: {len(df)}")
+    return df
 
-    # Categorização
-    df["categoria"] = df["item"].apply(categorize_item)
+# === 5. Limpeza de item (herdado e aprimorado) ===
+def clean_item(text):
+    s = text
+    s = re.sub(r"\[.*?\]|\(.*?\)", "", s)
+    s = re.sub(r"\b\d+k\b|\b\d+(\.\d+)?(s|c|kg|ql)\b", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"http\S+", "", s)
+    s = re.sub(r"[^a-zA-Z0-9\s'/-]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip().lower()
+    return s if len(s) > 1 else None
 
-    # Simulação de preço baseado em frequência (placeholder se não houver dados de preço)
-    freq = df["item"].value_counts().to_dict()
-    df["preco_2024"] = df["item"].apply(lambda x: parse_value(freq.get(x, 100)))
-    df["preco_2025"] = df["preco_2024"] * 1.05  # leve aumento simulado
+# === 6. Normalização e agrupamento ===
+def unify_dataframes(dfs):
+    df = pd.concat(dfs, ignore_index=True).drop_duplicates(subset=["type", "player", "item"])
+    df["item"] = df["item"].astype(str)
+    df["categoria"] = df["item"].apply(classify_category)
+    df["preco_2024"] = df.groupby("item").ngroup() * 10 + 100  # mock para visualização
+    df["preco_2025"] = df["preco_2024"] * (1 + (pd.Series(range(len(df))) % 5) / 100)
     df["variacao"] = ((df["preco_2025"] - df["preco_2024"]) / df["preco_2024"] * 100).round(1)
-    df["indicador"] = df["variacao"].apply(lambda x: "▲" if x > 0 else ("▼" if x < 0 else "—"))
-    df["confianca"] = df["item"].map(lambda x: confidence_level(freq.get(x, 1)))
-    df["venda"] = df["preco_2025"]
+    df["indicador"] = df["variacao"].apply(lambda v: "▲" if v > 0 else "▼" if v < 0 else "—")
+    df["confianca"] = "Média"
+    df["venda"] = df["preco_2025"] * 1.1
+    df = df[["item", "categoria", "preco_2024", "preco_2025", "variacao", "indicador", "confianca", "venda"]]
+    return df
 
-    # Salvar CSV
-    df_export = df[["item", "categoria", "preco_2024", "preco_2025",
-                    "variacao", "indicador", "confianca", "venda"]]
-    df_export.to_csv(CSV_OUT, index=False)
-    print(f"💾 Arquivo CSV salvo: {CSV_OUT} ({len(df_export)} linhas)")
+# === 7. Classificação simples de categoria ===
+def classify_category(item):
+    if any(x in item for x in ["brick", "plank", "beam", "shard", "clay", "mortar", "log"]):
+        return "Bulk"
+    if any(x in item for x in ["lump", "ore", "metal", "steel", "iron", "silver", "gold"]):
+        return "Metais"
+    if any(x in item for x in ["chain", "plate", "set", "armour", "helm"]):
+        return "Armour"
+    if any(x in item for x in ["tool", "imp", "smith", "hammer", "anvil"]):
+        return "Blacksmithing"
+    if any(x in item for x in ["enchant", "cast", "lt", "coc", "woa"]):
+        return "Enchants"
+    return "Misc"
 
-    # ============================
-    # 3. GERAR data.js PARA O SITE
-    # ============================
-    print("🧩 Gerando data.js para o site...")
-    js_array = ",\n      ".join([
-        f'["{r.item}","{r.categoria}",{r.preco_2024},{r.preco_2025},{r.variacao},"{r.indicador}","{r.confianca}",{r.venda}]'
-        for r in df_export.itertuples(index=False)
-    ])
-    with open(JS_OUT, "w", encoding="utf-8") as f:
-        f.write(f"const data = [\n      {js_array}\n];")
-    print(f"✅ data.js gerado com sucesso: {JS_OUT}")
+# === 8. Salvar CSV processado ===
+def save_clean_data(df):
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    df = df.dropna(subset=["item"]).drop_duplicates()
+    df.to_csv(OUTPUT_FILE, index=False)
+    print(f"💾 Arquivo salvo em: {OUTPUT_FILE} ({len(df)} linhas)")
 
-    # ============================
-    # 4. LOG DE INSIGHTS
-    # ============================
-    print("\n📊 Top 10 Itens Mais Frequentes:")
-    print(df["item"].value_counts().head(10))
-
-    print("\n💰 Top 10 Itens com Maior Preço:")
-    print(df_export.sort_values("preco_2025", ascending=False).head(10)[["item", "preco_2025", "categoria", "confianca"]])
-
-    print("\n✅ Processo concluído com sucesso.")
+# === 9. Execução Principal ===
+def main():
+    trade_files = get_trade_files()
+    dfs = []
+    for file in trade_files:
+        try:
+            if is_tabulated(file):
+                dfs.append(parse_tabulated(file))
+            else:
+                dfs.append(parse_raw(file))
+        except Exception as e:
+            print(f"⚠️ Erro ao processar {file}: {e}")
+    if not dfs:
+        raise RuntimeError("Nenhum dado processado.")
+    df = unify_dataframes(dfs)
+    save_clean_data(df)
 
 if __name__ == "__main__":
     main()
