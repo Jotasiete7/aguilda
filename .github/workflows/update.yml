@@ -6,12 +6,12 @@ on:
       - 'data/raw/*.txt'
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   process-data:
     runs-on: ubuntu-latest
+    concurrency:
+      group: process-trade
+      cancel-in-progress: true
 
     steps:
       - name: Checkout repository
@@ -30,11 +30,21 @@ jobs:
         run: |
           python scripts/main.py
 
-      - name: Commit and push processed data
+      - name: Commit processed data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add data/processed/*
+          git fetch origin main
+          git add data/processed/* || echo "Nenhum arquivo novo"
           git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
           git pull --rebase origin main || echo "Sem rebase necessário"
-          git push origin main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado"
+
+      - name: Trigger deploy
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: trigger-pages-deploy
