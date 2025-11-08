@@ -1,39 +1,44 @@
-import pandas as pd
-import os
-import json
+name: Update Trade Insights
 
-CSV_PATH = "data/processed/trade_data_clean.csv"
-JS_PATH = "data/processed/data.js"
+on:
+  push:
+    paths:
+      - 'data/raw/*.txt'
+  workflow_dispatch:
 
-def main():
-    if not os.path.exists(CSV_PATH):
-        print(f"❌ Arquivo não encontrado: {CSV_PATH}")
-        return
+jobs:
+  process-data:
+    runs-on: ubuntu-latest
 
-    try:
-        df = pd.read_csv(CSV_PATH)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-        if df.empty:
-            print("⚠️ CSV está vazio. Nada será exportado.")
-            return
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-        # Substituir NaN e None por string vazia
-        df = df.fillna("")
+      - name: Install dependencies
+        run: |
+          pip install pandas
 
-        # Converter para lista de listas (cada linha = array JS)
-        data_list = df.values.tolist()
+      - name: Process trade data (main.py)
+        run: |
+          python scripts/main.py
 
-        # Exportar para arquivo JS compatível com o site
-        js_content = "const data = " + json.dumps(data_list, ensure_ascii=False, indent=2) + ";"
-        os.makedirs(os.path.dirname(JS_PATH), exist_ok=True)
-        with open(JS_PATH, "w", encoding="utf-8") as f:
-            f.write(js_content)
+      - name: Gerar data.js para o site (export_to_js.py)
+        run: |
+          python scripts/export_to_js.py
 
-        print(f"✅ Exportado com sucesso para: {JS_PATH}")
-        print(f"💾 Linhas exportadas: {len(data_list)}")
-
-    except Exception as e:
-        print(f"❌ Erro ao converter CSV → JS: {e}")
-
-if __name__ == "__main__":
-    main()
+      - name: Commit processed data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git fetch origin main
+          git add data/processed/* || echo "Nenhum arquivo novo"
+          git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
+          git pull --rebase origin main || echo "Sem rebase necessário"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado (branch já atualizada)"
