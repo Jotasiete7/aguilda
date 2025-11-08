@@ -65,7 +65,7 @@
     .dark .opportunities { background: #0c5460; color: #d1ecf1; }
     .export { margin-top: 1rem; text-align: center; font-size: 0.9rem; color: #666; }
     .dark .export { color: #aaa; }
-    /* === BOTÃO ANÁLISE DE ARMAS 2025 === */
+    /* === AVISO ANÁLISE DE ARMAS === */
     .weapons-box {
       background: var(--warning-bg); color: var(--warning-text);
       padding: 1.2rem; border-radius: 12px; margin: 1rem 0;
@@ -73,14 +73,11 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .dark .weapons-box { background: #7f6a00; color: #fff; border-left-color: #f1c40f; }
-    .weapons-box h4 {
-      margin: 0 0 0.8rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;
-    }
+    .weapons-box h4 { margin: 0 0 0.8rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
     .weapons-box .btn {
       display: inline-block; margin-top: 0.8rem;
       background: #f39c12; color: white; padding: 0.6rem 1.2rem;
-      border-radius: 8px; text-decoration: none; font-weight: bold;
-      font-size: 0.95rem;
+      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95rem;
     }
     .weapons-box .btn:hover { background: #e67e22; }
     .dark .weapons-box .btn { background: #f1c40f; color: #000; }
@@ -92,17 +89,14 @@
     <h1>A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
     <button class="toggle" onclick="document.body.classList.toggle('dark')">Modo Escuro</button>
   </header>
-
   <div class="container">
-    <!-- === AVISO + BOTÃO ANÁLISE DE ARMAS === -->
+
+    <!-- AVISO / LINK DE ARMAS -->
     <div class="weapons-box">
       <h4>Análise de Armas 2025 (Beta)</h4>
-      <p>
-        <strong>ATENÇÃO:</strong> Esta é uma análise <strong>não definitiva</strong>, baseada em dados da Wurmpedia e discussões da comunidade até <strong>outubro de 2025</strong>.<br>
-        <strong>Podem haver pequenos erros</strong> de cálculo, interpretação ou mudanças futuras no jogo. <strong>Teste tudo no jogo antes de investir!</strong><br>
-        <em>Estamos sempre atualizando — sua paciência e feedback ajudam a melhorar!</em>
-      </p>
-      <a href="weapons-guide.html" class="btn">Abrir Análise de Armas 2025</a>
+      <p><strong>ATENÇÃO:</strong> Dados coletados até outubro de 2025. Use para referência estratégica.<br>
+      <em>Este dashboard é atualizado automaticamente conforme novos trades são enviados.</em></p>
+      <a href="weapons-guide.html" class="btn">Abrir Análise</a>
     </div>
 
     <div class="controls">
@@ -116,14 +110,16 @@
         <option value="Média">Média</option>
         <option value="Baixa">Baixa</option>
       </select>
-      <button onclick="showOpportunities()">Oportunidades de Compra</button>
+      <button onclick="showOpportunities()">Oportunidades</button>
       <button class="recipes" onclick="window.open('recipes.html', '_blank')">Recipes Guide</button>
     </div>
 
     <div class="grid">
       <div class="card">
         <h3>Variação de Preços (Top 10)</h3>
-        <div class="chart-container"><canvas id="chart"></canvas></div>
+        <div class="chart-container">
+          <canvas id="chart"></canvas>
+        </div>
       </div>
       <div class="card">
         <h3>Itens em Alta</h3>
@@ -156,114 +152,118 @@
     </div>
 
     <div class="export">
-      <small>Atualizado: 31/10/2025 | Feito com amor por <strong>A Guilda</strong></small>
+      <small>Atualizado automaticamente — <strong>A Guilda</strong> © 2025</small>
     </div>
   </div>
 
-  <!-- === IMPORTAÇÃO DE DADOS === -->
+  <!-- ===== IMPORTA DADOS ===== -->
   <script src="data/processed/data.js"></script>
 
-  <!-- === LÓGICA DO DASHBOARD === -->
+  <!-- ===== DASHBOARD LOGIC ===== -->
   <script>
-    const categories = [...new Set(data.map(row => row[1]))].sort();
-    const categorySelect = document.getElementById("category");
-    categories.forEach(cat => {
-      const opt = document.createElement("option");
-      opt.value = cat;
-      opt.textContent = cat;
-      categorySelect.appendChild(opt);
-    });
+    if (typeof data === "undefined" || !Array.isArray(data) || data.length === 0) {
+      document.getElementById("tableBody").innerHTML = "<tr><td colspan='8' style='text-align:center;'>Nenhum dado disponível.</td></tr>";
+    } else {
+      // Corrigir valores vazios / NaN
+      data = data.map(r => r.map(v => (v === null || v === undefined || v === "NaN" || v === "nan" ? "—" : v)));
 
-    function renderTable(filtered = data) {
-      const tbody = document.getElementById("tableBody");
-      tbody.innerHTML = "";
-      filtered.forEach(row => {
-        const tr = document.createElement("tr");
-        row.forEach((cell, i) => {
-          const td = document.createElement("td");
-          if (i === 5) {
-            td.innerHTML =
-              cell === "▲" ? `<span class='up'>${cell}</span>` :
-              cell === "▼" ? `<span class='down'>${cell}</span>` :
-              `<span class='stable'>${cell}</span>`;
-          } else if (i >= 2 && i <= 3 || i === 7) {
-            td.textContent = cell > 1000 ? (cell/100).toFixed(2) + "s" : cell + "c";
-          } else {
-            td.textContent = cell;
-          }
-          tr.appendChild(td);
+      // CATEGORIAS
+      const categories = [...new Set(data.map(r => r[1]))].sort();
+      const categorySelect = document.getElementById("category");
+      categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat; opt.textContent = cat;
+        categorySelect.appendChild(opt);
+      });
+
+      // RENDER TABELA
+      function renderTable(filtered = data) {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+        filtered.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach((cell, i) => {
+            const td = document.createElement("td");
+            let val = cell === null || cell === undefined || cell === "" ? "—" : cell;
+            if (i === 5) {
+              td.innerHTML = val === "▲" ? `<span class='up'>${val}</span>` :
+                             val === "▼" ? `<span class='down'>${val}</span>` :
+                             `<span class='stable'>${val}</span>`;
+            } else if (i >= 2 && i <= 3 || i === 7) {
+              td.textContent = isNaN(parseFloat(val)) ? val : (val > 1000 ? (val/100).toFixed(2)+'s' : val+'c');
+            } else {
+              td.textContent = val;
+            }
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
         });
-        tbody.appendChild(tr);
-      });
-    }
+      }
 
-    function filterTable() {
-      const search = document.getElementById("search").value.toLowerCase();
-      const cat = document.getElementById("category").value;
-      const conf = document.getElementById("confidence").value;
-      const filtered = data.filter(row => {
-        const matchesSearch = row[0].toLowerCase().includes(search);
-        const matchesCat = !cat || row[1] === cat;
-        const matchesConf = !conf || row[6] === conf;
-        return matchesSearch && matchesCat && matchesConf;
-      });
-      renderTable(filtered);
-      updateChart(filtered);
-      updateUpItems(filtered);
-    }
+      // FILTROS
+      function filterTable() {
+        const search = document.getElementById("search").value.toLowerCase();
+        const cat = document.getElementById("category").value;
+        const conf = document.getElementById("confidence").value;
+        const filtered = data.filter(row => {
+          const matchesSearch = row[0].toLowerCase().includes(search);
+          const matchesCat = !cat || row[1] === cat;
+          const matchesConf = !conf || row[6] === conf;
+          return matchesSearch && matchesCat && matchesConf;
+        });
+        renderTable(filtered);
+        updateChart(filtered);
+        updateUpItems(filtered);
+      }
 
-    function updateChart(items) {
-      const ctx = document.getElementById("chart").getContext("2d");
-      const top10 = [...items].sort((a,b) => b[4] - a[4]).slice(0,10);
-      if (window.myChart) window.myChart.destroy();
-      window.myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: top10.map(r => r[0].substring(0,20) + (r[0].length > 20 ? "..." : "")),
-          datasets: [{
-            label: 'Variação %',
-            data: top10.map(r => r[4]),
-            backgroundColor: top10.map(r =>
-              r[5] === "▲" ? '#2e8b57' :
-              r[5] === "▼" ? '#c0392b' :
-              '#3498db'
-            ),
-            borderRadius: 6
-          }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-      });
-    }
+      // GRÁFICO
+      function updateChart(items) {
+        if (!items || items.length === 0) return;
+        const ctx = document.getElementById("chart").getContext("2d");
+        const top10 = [...items].sort((a,b)=>b[4]-a[4]).slice(0,10);
+        if (window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+          type:'bar',
+          data:{
+            labels: top10.map(r => r[0]),
+            datasets:[{
+              label:'Variação %',
+              data: top10.map(r => r[4]),
+              backgroundColor: top10.map(r => r[5]==="▲"?'#2e8b57':r[5]==="▼"?'#c0392b':'#3498db'),
+              borderRadius:6
+            }]
+          },
+          options:{responsive:true,plugins:{legend:{display:false}}}
+        });
+      }
 
-    function updateUpItems(items) {
-      const up = items.filter(r => r[5] === "▲").slice(0, 8);
-      const container = document.getElementById("upItems");
-      container.innerHTML = up.map(r =>
-        `<p><strong>${r[0]}</strong>: +${r[4]}% → ${
-          r[3] > 1000 ? (r[3]/100).toFixed(2)+'s' : r[3]+'c'
-        }</p>`
-      ).join("");
-    }
+      // ITENS EM ALTA
+      function updateUpItems(items) {
+        const up = items.filter(r=>r[5]==="▲").slice(0,8);
+        const container = document.getElementById("upItems");
+        container.innerHTML = up.map(r=>`<p><strong>${r[0]}</strong>: +${r[4]}% → ${r[3]>1000?(r[3]/100).toFixed(2)+'s':r[3]+'c'}</p>`).join("");
+      }
 
-    function showOpportunities() {
-      const opps = data.filter(r => r[5] === "▼" && r[6] === "Alta");
-      const list = document.getElementById("oppList");
-      list.innerHTML = opps.map(r =>
-        `<p><strong>${r[0]}</strong>: ${r[3]}c (era ${r[2]}c) → <em>Compre agora!</em></p>`
-      ).join("");
-      document.getElementById("opportunities").style.display = "block";
-    }
+      // OPORTUNIDADES
+      function showOpportunities() {
+        const opps = data.filter(r => r[5]==="▼" && r[6]==="Alta");
+        const list = document.getElementById("oppList");
+        list.innerHTML = opps.map(r=>`<p><strong>${r[0]}</strong>: ${r[3]}c (era ${r[2]}c) → <em>Compre agora!</em></p>`).join("");
+        document.getElementById("opportunities").style.display = "block";
+      }
 
-    function sortTable(n) {
-      const isNum = n >= 2 && n <= 4;
-      data.sort((a, b) => isNum ? a[n] - b[n] : a[n].localeCompare(b[n]));
-      filterTable();
-    }
+      // ORDENAÇÃO
+      function sortTable(n) {
+        const isNum = n >= 2 && n <= 4;
+        data.sort((a,b)=> isNum ? a[n]-b[n] : a[n].localeCompare(b[n]));
+        filterTable();
+      }
 
-    // === INICIALIZAÇÃO ===
-    renderTable();
-    updateChart(data);
-    updateUpItems(data);
+      // INIT
+      renderTable();
+      updateChart(data);
+      updateUpItems(data);
+    }
   </script>
 </body>
 </html>
