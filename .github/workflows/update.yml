@@ -9,9 +9,6 @@ on:
 jobs:
   process-data:
     runs-on: ubuntu-latest
-    concurrency:
-      group: process-trade
-      cancel-in-progress: true
 
     steps:
       - name: Checkout repository
@@ -23,12 +20,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install pandas
+        run: pip install pandas
 
       - name: Process trade data
-        run: |
-          python scripts/main.py
+        run: python scripts/main.py
 
       - name: Commit processed data
         env:
@@ -40,11 +35,4 @@ jobs:
           git add data/processed/* || echo "Nenhum arquivo novo"
           git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
           git pull --rebase origin main || echo "Sem rebase necessário"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado"
-
-      - name: Trigger deploy
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: trigger-pages-deploy
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado (branch já atualizada)"
