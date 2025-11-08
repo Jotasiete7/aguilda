@@ -1,44 +1,43 @@
-name: Update Trade Insights
+import pandas as pd
+import os
+import json
 
-on:
-  push:
-    paths:
-      - 'data/raw/*.txt'
-  workflow_dispatch:
+# Caminhos
+CSV_FILE = "data/processed/trade_data_clean.csv"
+JS_FILE = "data/processed/data.js"
 
-jobs:
-  process-data:
-    runs-on: ubuntu-latest
+def main():
+    print("📦 Convertendo CSV para JS...")
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    # Verifica se o arquivo existe
+    if not os.path.exists(CSV_FILE):
+        print(f"❌ ERRO: Arquivo não encontrado: {CSV_FILE}")
+        return
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    try:
+        # Carrega CSV
+        df = pd.read_csv(CSV_FILE)
 
-      - name: Install dependencies
-        run: |
-          pip install pandas
+        # Substitui valores NaN e converte pra tipos básicos
+        df = df.fillna("").astype(str)
 
-      - name: Process trade data (main.py)
-        run: |
-          python scripts/main.py
+        # Converte para lista de listas (para o JS)
+        data_list = df.values.tolist()
 
-      - name: Gerar data.js para o site (export_to_js.py)
-        run: |
-          python scripts/export_to_js.py
+        # Cria conteúdo JS
+        js_content = "const data = " + json.dumps(data_list, ensure_ascii=False, indent=2) + ";"
 
-      - name: Commit processed data
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git fetch origin main
-          git add data/processed/* || echo "Nenhum arquivo novo"
-          git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
-          git pull --rebase origin main || echo "Sem rebase necessário"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado (branch já atualizada)"
+        # Garante que o diretório existe
+        os.makedirs(os.path.dirname(JS_FILE), exist_ok=True)
+
+        # Escreve o arquivo final
+        with open(JS_FILE, "w", encoding="utf-8") as f:
+            f.write(js_content)
+
+        print(f"✅ Arquivo gerado com sucesso: {JS_FILE}")
+
+    except Exception as e:
+        print(f"❌ Erro ao converter CSV para JS: {e}")
+
+if __name__ == "__main__":
+    main()
