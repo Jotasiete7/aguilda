@@ -20,15 +20,17 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pandas
+        run: |
+          pip install pandas
 
-      - name: Process trade data
-        run: python scripts/main.py
+      - name: Process trade data (main.py)
+        run: |
+          python scripts/main.py
 
-      - name: Gerar data.js para o site
+      - name: Gerar data.js para o site (export_to_js.py)
         run: |
           python scripts/export_to_js.py
-          
+
       - name: Commit processed data
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,5 +42,3 @@ jobs:
           git commit -m "Atualização automática de dados processados" || echo "Nada a commitar"
           git pull --rebase origin main || echo "Sem rebase necessário"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main || echo "Push ignorado (branch já atualizada)"
-
-      
