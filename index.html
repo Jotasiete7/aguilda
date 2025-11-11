@@ -3,267 +3,163 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>A Guilda - Dashboard NFI 2025</title>
+  <title>A GUILDA - DASHBOARD DE PREÇOS NFI 2025</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
-      --bg: #f4f6f9; --text: #1a1a1a; --card: #fff;
-      --green: #2e8b57; --red: #c0392b; --blue: #3498db;
-      --accent: #27ae60; --dark: #2c3e50;
-      --table-header: #f8f9fa; --table-header-text: #1a1a1a;
-      --warning-bg: #fff3cd; --warning-text: #856404;
-      --purple: #8e44ad;
-    }
-    .dark {
-      --bg: #1a1a1a; --text: #f4f6f9; --card: #2c3e50;
-      --table-header: #34495e; --table-header-text: #ecf0f1;
-      --warning-bg: #856404; --warning-text: #fff;
-    }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
-    header { background: var(--dark); color: white; padding: 1rem; text-align: center; position: relative; }
-    .toggle {
-      position: absolute; top: 1rem; right: 1rem;
-      background: #fff; color: #000;
-      border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
-      font-weight: bold;
-    }
-    .dark .toggle { background: #333; color: #fff; }
-    .container { max-width: 1200px; margin: auto; padding: 1rem; }
-    .controls {
-      display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;
-      background: var(--card); padding: 1rem; border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1); align-items: center;
-    }
-    select, input, button {
-      padding: 0.6rem; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem;
-    }
-    button {
-      background: var(--accent); color: white; border: none; cursor: pointer;
-      font-weight: bold; display: flex; align-items: center; gap: 0.5rem;
-    }
-    button:hover { background: #219653; }
-    button.recipes { background: var(--purple); }
-    button.recipes:hover { background: #7d3c98; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-    .card { background: var(--card); padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { padding: 0.8rem; text-align: left; border-bottom: 1px solid #eee; }
-    th {
-      background: var(--table-header) !important;
-      color: var(--table-header-text) !important;
-      cursor: pointer; user-select: none;
-    }
-    .dark th { border-bottom: 1px solid #4a5568; }
-    th:hover { background: #e9ecef !important; }
-    .dark th:hover { background: #3d566e !important; }
-    .up { color: var(--green); font-weight: bold; }
-    .down { color: var(--red); font-weight: bold; }
-    .stable { color: var(--blue); }
-    .chart-container { position: relative; height: 300px; }
-    .opportunities { background: #d1ecf1; padding: 1rem; border-radius: 12px; margin-top: 1rem; display: none; }
-    .dark .opportunities { background: #0c5460; color: #d1ecf1; }
-    .export { margin-top: 1rem; text-align: center; font-size: 0.9rem; color: #666; }
-    .dark .export { color: #aaa; }
-    /* === AVISO ANÁLISE DE ARMAS === */
-    .weapons-box {
-      background: var(--warning-bg); color: var(--warning-text);
-      padding: 1.2rem; border-radius: 12px; margin: 1rem 0;
-      border-left: 5px solid #f39c12; font-size: 0.95rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .dark .weapons-box { background: #7f6a00; color: #fff; border-left-color: #f1c40f; }
-    .weapons-box h4 { margin: 0 0 0.8rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
-    .weapons-box .btn {
-      display: inline-block; margin-top: 0.8rem;
-      background: #f39c12; color: white; padding: 0.6rem 1.2rem;
-      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95rem;
-    }
-    .weapons-box .btn:hover { background: #e67e22; }
-    .dark .weapons-box .btn { background: #f1c40f; color: #000; }
-    .dark .weapons-box .btn:hover { background: #f39c12; }
+    body { background: #1a1a1a; color: #f0f0f0; font-family: 'Segoe UI', sans-serif; }
+    .container { max-width: 1400px; }
+    .card { background: #2d2d2d; border: 1px solid #444; border-radius: 12px; }
+    .table { font-size: 0.9rem; }
+    .table th { background: #3a3a3a; }
+    .trend-up { color: #28a745; }
+    .trend-down { color: #dc3545; }
+    .loading { text-align: center; padding: 3rem; font-size: 1.2rem; }
+    .error { color: #dc3545; font-weight: bold; }
+    .chart-container { position: relative; height: 400px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
-    <button class="toggle" onclick="document.body.classList.toggle('dark')">Modo Escuro</button>
-  </header>
-  <div class="container">
+  <div class="container py-4">
+    <h1 class="text-center mb-4">A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
+    <p class="text-center text-muted">Análise de Armas e Itens 2025 (Beta) — Atualizado automaticamente</p>
 
-    <!-- AVISO / LINK DE ARMAS -->
-    <div class="weapons-box">
-      <h4>Análise de Armas 2025 (Beta)</h4>
-      <p><strong>ATENÇÃO:</strong> Dados coletados até outubro de 2025. Use para referência estratégica.<br>
-      <em>Este dashboard é atualizado automaticamente conforme novos trades são enviados.</em></p>
-      <a href="weapons-guide.html" class="btn">Abrir Análise</a>
-    </div>
+    <div id="loading" class="loading">Carregando dados do mercado... Aguarde</div>
+    <div id="error" class="error text-center" style="display:none;"></div>
 
-    <div class="controls">
-      <input type="text" id="search" placeholder="Buscar item..." onkeyup="filterTable()">
-      <select id="category" onchange="filterTable()">
-        <option value="">Todas Categorias</option>
-      </select>
-      <select id="confidence" onchange="filterTable()">
-        <option value="">Todas Confianças</option>
-        <option value="Alta">Alta</option>
-        <option value="Média">Média</option>
-        <option value="Baixa">Baixa</option>
-      </select>
-      <button onclick="showOpportunities()">Oportunidades</button>
-      <button class="recipes" onclick="window.open('recipes.html', '_blank')">Recipes Guide</button>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h3>Variação de Preços (Top 10)</h3>
-        <div class="chart-container">
-          <canvas id="chart"></canvas>
+    <div id="content" style="display:none;">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5>Tabela de Preços</h5>
+          <div class="table-responsive">
+            <table class="table table-dark table-hover" id="priceTable">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Cat.</th>
+                  <th>2024</th>
+                  <th>2025</th>
+                  <th>Var.</th>
+                  <th>Indicador</th>
+                  <th>Conf.</th>
+                  <th>Venda</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <h3>Itens em Alta</h3>
-        <div id="upItems"></div>
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5>Gráfico de Variação</h5>
+          <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <h3>Tabela de Preços</h3>
-      <table id="priceTable">
-        <thead>
-          <tr>
-            <th onclick="sortTable(0)">Item</th>
-            <th onclick="sortTable(1)">Cat.</th>
-            <th onclick="sortTable(2)">2024</th>
-            <th onclick="sortTable(3)">2025</th>
-            <th onclick="sortTable(4)">Var.</th>
-            <th onclick="sortTable(5)">Indicador</th>
-            <th onclick="sortTable(6)">Conf.</th>
-            <th onclick="sortTable(7)">Venda</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-
-    <div id="opportunities" class="opportunities">
-      <h3>Oportunidades de Compra (+ Confiança Alta)</h3>
-      <div id="oppList"></div>
-    </div>
-
-    <div class="export">
-      <small>Atualizado automaticamente — <strong>A Guilda</strong> © 2025</small>
+      <div class="card">
+        <div class="card-body">
+          <h5>Oportunidades de Compra (+ Confiança Alta)</h5>
+          <ul id="opportunities" class="list-group"></ul>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== IMPORTA DADOS ===== -->
-  <script src="data/processed/data.js"></script>
-
-  <!-- ===== DASHBOARD LOGIC ===== -->
+  <!-- CARREGA data.js COM CACHE BUSTER -->
   <script>
-    if (typeof data === "undefined" || !Array.isArray(data) || data.length === 0) {
-      document.getElementById("tableBody").innerHTML = "<tr><td colspan='8' style='text-align:center;'>Nenhum dado disponível.</td></tr>";
-    } else {
-      // Corrigir valores vazios / NaN
-      data = data.map(r => r.map(v => (v === null || v === undefined || v === "NaN" || v === "nan" ? "—" : v)));
+    const cacheBuster = new Date().getTime();
+    const script = document.createElement('script');
+    script.src = `data/processed/data.js?v=${cacheBuster}`;
+    script.onload = () => {
+      if (typeof data !== 'undefined' && data.length > 0) {
+        renderDashboard();
+      } else {
+        showError('Dados não encontrados ou vazios. Verifique o processamento.');
+      }
+    };
+    script.onerror = () => showError('Erro ao carregar data.js. Tente novamente em 5 minutos.');
+    document.head.appendChild(script);
 
-      // CATEGORIAS
-      const categories = [...new Set(data.map(r => r[1]))].sort();
-      const categorySelect = document.getElementById("category");
-      categories.forEach(cat => {
-        const opt = document.createElement("option");
-        opt.value = cat; opt.textContent = cat;
-        categorySelect.appendChild(opt);
+    function showError(msg) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').textContent = msg;
+      document.getElementById('error').style.display = 'block';
+    }
+
+    function renderDashboard() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      const tbody = document.querySelector('#priceTable tbody');
+      const oppList = document.getElementById('opportunities');
+      let chartLabels = [], chartData = [], chartColors = [];
+
+      data.forEach(row => {
+        const [item, cat, p2024, p2025, variacao, indicador, confianca, venda] = row;
+        const varText = variacao >= 0 ? `+${variacao}%` : `${variacao}%`;
+        const trendClass = variacao >= 0 ? 'trend-up' : 'trend-down';
+
+        // Tabela
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item}</td>
+          <td>${cat}</td>
+          <td>${p2024}</td>
+          <td>${p2025}</td>
+          <td class="${trendClass}">${varText}</td>
+          <td>${indicador}</td>
+          <td>${confianca}</td>
+          <td>${venda}</td>
+        `;
+        tbody.appendChild(tr);
+
+        // Oportunidades
+        if (confianca === 'Alta' && variacao > 5) {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between';
+          li.innerHTML = `<span>${item} (${cat})</span><span class="badge bg-success">↑ ${varText}</span>`;
+          oppList.appendChild(li);
+        }
+
+        // Gráfico
+        if (Math.abs(variacao) > 3) {
+          chartLabels.push(item.substring(0, 15) + (item.length > 15 ? '...' : ''));
+          chartData.push(variacao);
+          chartColors.push(variacao >= 0 ? '#28a745' : '#dc3545');
+        }
       });
 
-      // RENDER TABELA
-      function renderTable(filtered = data) {
-        const tbody = document.getElementById("tableBody");
-        tbody.innerHTML = "";
-        filtered.forEach(row => {
-          const tr = document.createElement("tr");
-          row.forEach((cell, i) => {
-            const td = document.createElement("td");
-            let val = cell === null || cell === undefined || cell === "" ? "—" : cell;
-            if (i === 5) {
-              td.innerHTML = val === "▲" ? `<span class='up'>${val}</span>` :
-                             val === "▼" ? `<span class='down'>${val}</span>` :
-                             `<span class='stable'>${val}</span>`;
-            } else if (i >= 2 && i <= 3 || i === 7) {
-              td.textContent = isNaN(parseFloat(val)) ? val : (val > 1000 ? (val/100).toFixed(2)+'s' : val+'c');
-            } else {
-              td.textContent = val;
-            }
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
-      }
+      // Gráfico
+      new Chart(document.getElementById('priceChart'), {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Variação 2024 → 2025 (%)',
+            data: chartData,
+            backgroundColor: chartColors,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
 
-      // FILTROS
-      function filterTable() {
-        const search = document.getElementById("search").value.toLowerCase();
-        const cat = document.getElementById("category").value;
-        const conf = document.getElementById("confidence").value;
-        const filtered = data.filter(row => {
-          const matchesSearch = row[0].toLowerCase().includes(search);
-          const matchesCat = !cat || row[1] === cat;
-          const matchesConf = !conf || row[6] === conf;
-          return matchesSearch && matchesCat && matchesConf;
-        });
-        renderTable(filtered);
-        updateChart(filtered);
-        updateUpItems(filtered);
+      if (oppList.children.length === 0) {
+        oppList.innerHTML = '<li class="list-group-item text-muted">Nenhuma oportunidade com alta confiança no momento.</li>';
       }
-
-      // GRÁFICO
-      function updateChart(items) {
-        if (!items || items.length === 0) return;
-        const ctx = document.getElementById("chart").getContext("2d");
-        const top10 = [...items].sort((a,b)=>b[4]-a[4]).slice(0,10);
-        if (window.myChart) window.myChart.destroy();
-        window.myChart = new Chart(ctx, {
-          type:'bar',
-          data:{
-            labels: top10.map(r => r[0]),
-            datasets:[{
-              label:'Variação %',
-              data: top10.map(r => r[4]),
-              backgroundColor: top10.map(r => r[5]==="▲"?'#2e8b57':r[5]==="▼"?'#c0392b':'#3498db'),
-              borderRadius:6
-            }]
-          },
-          options:{responsive:true,plugins:{legend:{display:false}}}
-        });
-      }
-
-      // ITENS EM ALTA
-      function updateUpItems(items) {
-        const up = items.filter(r=>r[5]==="▲").slice(0,8);
-        const container = document.getElementById("upItems");
-        container.innerHTML = up.map(r=>`<p><strong>${r[0]}</strong>: +${r[4]}% → ${r[3]>1000?(r[3]/100).toFixed(2)+'s':r[3]+'c'}</p>`).join("");
-      }
-
-      // OPORTUNIDADES
-      function showOpportunities() {
-        const opps = data.filter(r => r[5]==="▼" && r[6]==="Alta");
-        const list = document.getElementById("oppList");
-        list.innerHTML = opps.map(r=>`<p><strong>${r[0]}</strong>: ${r[3]}c (era ${r[2]}c) → <em>Compre agora!</em></p>`).join("");
-        document.getElementById("opportunities").style.display = "block";
-      }
-
-      // ORDENAÇÃO
-      function sortTable(n) {
-        const isNum = n >= 2 && n <= 4;
-        data.sort((a,b)=> isNum ? a[n]-b[n] : a[n].localeCompare(b[n]));
-        filterTable();
-      }
-
-      // INIT
-      renderTable();
-      updateChart(data);
-      updateUpItems(data);
     }
   </script>
+
+  <footer class="text-center py-4 text-muted">
+    Atualizado automaticamente — A Guilda © 2025
+  </footer>
 </body>
 </html>
