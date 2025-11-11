@@ -5,83 +5,162 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>A GUILDA - DASHBOARD DE PREÇOS NFI 2025</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { background: #1a1a1a; color: #f0f0f0; font-family: 'Segoe UI', sans-serif; }
-    .container { max-width: 1400px; }
-    .card { background: #2d2d2d; border: 1px solid #444; border-radius: 12px; }
+    :root {
+      --bg: #1a1a1a;
+      --card: #2d2d2d;
+      --text: #f0f0f0;
+      --border: #444;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; }
+    .container { max-width: 1500px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
     .table { font-size: 0.9rem; }
-    .table th { background: #3a3a3a; }
-    .trend-up { color: #28a745; }
-    .trend-down { color: #dc3545; }
+    .table th { background: #3a3a3a; position: sticky; top: 0; z-index: 10; }
+    .trend-up { color: var(--success); font-weight: bold; }
+    .trend-down { color: var(--danger); font-weight: bold; }
+    .badge-conf { font-size: 0.7rem; }
     .loading { text-align: center; padding: 3rem; font-size: 1.2rem; }
-    .error { color: #dc3545; font-weight: bold; }
+    .error { color: var(--danger); font-weight: bold; text-align: center; }
     .chart-container { position: relative; height: 400px; }
+    .nav-link { color: var(--text); }
+    .nav-link.active { background: #444; border-radius: 8px; }
+    .pagination .page-link { background: var(--card); border-color: var(--border); color: var(--text); }
+    .pagination .page-item.active .page-link { background: var(--success); border-color: var(--success); }
   </style>
 </head>
 <body>
   <div class="container py-4">
-    <h1 class="text-center mb-4">A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
-    <p class="text-center text-muted">Análise de Armas e Itens 2025 (Beta) — Atualizado automaticamente</p>
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold">A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
+      <p class="text-muted">Análise de Armas e Itens 2025 (Beta) — Atualizado automaticamente</p>
+      <div id="lastUpdate" class="text-muted small"></div>
+    </div>
 
+    <!-- Loading & Error -->
     <div id="loading" class="loading">Carregando dados do mercado... Aguarde</div>
-    <div id="error" class="error text-center" style="display:none;"></div>
+    <div id="error" class="error" style="display:none;"></div>
 
+    <!-- Content -->
     <div id="content" style="display:none;">
-      <div class="card mb-4">
-        <div class="card-body">
-          <h5>Tabela de Preços</h5>
-          <div class="table-responsive">
-            <table class="table table-dark table-hover" id="priceTable">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Cat.</th>
-                  <th>2024</th>
-                  <th>2025</th>
-                  <th>Var.</th>
-                  <th>Indicador</th>
-                  <th>Conf.</th>
-                  <th>Venda</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+      <!-- Nav Tabs -->
+      <ul class="nav nav-pills justify-content-center mb-4" id="dashboardTabs">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-precos">Preços</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-top10">Top 10</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-wtb">Top WTB</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-oportunidades">Oportunidades</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Tabela de Preços -->
+        <div class="tab-pane fade show active" id="tab-precos">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5>Tabela de Preços</h5>
+              <div class="table-responsive">
+                <table class="table table-dark table-hover" id="priceTable">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Cat.</th>
+                      <th>2024</th>
+                      <th>2025</th>
+                      <th>Var.</th>
+                      <th>Indicador</th>
+                      <th>Conf.</th>
+                      <th>Venda</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center" id="pagination"></ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 10 Itens do Mês -->
+        <div class="tab-pane fade" id="tab-top10">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5>Top 10 Itens Mais Negociados (2025)</h5>
+              <div class="table-responsive">
+                <table class="table table-dark">
+                  <thead><tr><th>#</th><th>Item</th><th>Volume</th><th>Preço Médio</th></tr></thead>
+                  <tbody id="top10Body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 10 WTB -->
+        <div class="tab-pane fade" id="tab-wtb">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5>Top 10 Itens Mais Procurados (WTB)</h5>
+              <div class="table-responsive">
+                <table class="table table-dark">
+                  <thead><tr><th>#</th><th>Item</th><th>Buscas</th><th>Preço Máx. Oferecido</th></tr></thead>
+                  <tbody id="wtbBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oportunidades -->
+        <div class="tab-pane fade" id="tab-oportunidades">
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5>Oportunidades de Compra (+10% variação & alta confiança)</h5>
+              <ul id="opportunitiesList" class="list-group"></ul>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card mb-4">
+      <!-- Gráfico -->
+      <div class="card">
         <div class="card-body">
-          <h5>Gráfico de Variação</h5>
+          <h5>Gráfico de Variação (Itens com >3%)</h5>
           <div class="chart-container">
             <canvas id="priceChart"></canvas>
           </div>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-body">
-          <h5>Oportunidades de Compra (+ Confiança Alta)</h5>
-          <ul id="opportunities" class="list-group"></ul>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- CARREGA data.js COM CACHE BUSTER -->
+  <!-- Footer -->
+  <footer class="text-center py-4 text-muted small">
+    Atualizado automaticamente — <strong>A Guilda © 2025</strong> | 
+    <a href="recipes.html" class="text-decoration-none">Receitas</a> | 
+    <a href="weapons-guide.html" class="text-decoration-none">Guia de Armas</a>
+  </footer>
+
+  <!-- Carrega data.js com cache buster -->
   <script>
     const cacheBuster = new Date().getTime();
     const script = document.createElement('script');
     script.src = `data/processed/data.js?v=${cacheBuster}`;
     script.onload = () => {
       if (typeof data !== 'undefined' && data.length > 0) {
-        renderDashboard();
+        document.getElementById('lastUpdate').textContent = `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
+        renderAll();
       } else {
-        showError('Dados não encontrados ou vazios. Verifique o processamento.');
+        showError('Dados não encontrados. Verifique o processamento.');
       }
     };
-    script.onerror = () => showError('Erro ao carregar data.js. Tente novamente em 5 minutos.');
+    script.onerror = () => showError('Erro ao carregar dados. Tente novamente em 5 minutos.');
     document.head.appendChild(script);
 
     function showError(msg) {
@@ -90,76 +169,159 @@
       document.getElementById('error').style.display = 'block';
     }
 
-    function renderDashboard() {
+    function renderAll() {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('content').style.display = 'block';
 
+      const rawData = [...data]; // Preserva original
+      renderPriceTable(rawData);
+      renderTop10(rawData);
+      renderTopWTB(rawData);
+      renderOpportunities(rawData);
+      renderChart(rawData);
+    }
+
+    function renderPriceTable(data) {
       const tbody = document.querySelector('#priceTable tbody');
-      const oppList = document.getElementById('opportunities');
-      let chartLabels = [], chartData = [], chartColors = [];
+      const pagination = document.getElementById('pagination');
+      const itemsPerPage = 20;
+      const totalPages = Math.ceil(data.length / itemsPerPage);
 
-      data.forEach(row => {
-        const [item, cat, p2024, p2025, variacao, indicador, confianca, venda] = row;
-        const varText = variacao >= 0 ? `+${variacao}%` : `${variacao}%`;
-        const trendClass = variacao >= 0 ? 'trend-up' : 'trend-down';
+      function showPage(page) {
+        tbody.innerHTML = '';
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        data.slice(start, end).forEach(row => {
+          const [item, cat, p2024, p2025, variacao, indicador, confianca, venda] = row;
+          const varText = variacao >= 0 ? `+${variacao.toFixed(1)}%` : `${variacao.toFixed(1)}%`;
+          const trendClass = variacao >= 0 ? 'trend-up' : 'trend-down';
+          const badgeClass = confianca === 'Alta' ? 'bg-success' : confianca === 'Média' ? 'bg-warning' : 'bg-secondary';
 
-        // Tabela
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item}</td>
-          <td>${cat}</td>
-          <td>${p2024}</td>
-          <td>${p2025}</td>
-          <td class="${trendClass}">${varText}</td>
-          <td>${indicador}</td>
-          <td>${confianca}</td>
-          <td>${venda}</td>
-        `;
-        tbody.appendChild(tr);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${item}</td>
+            <td>${cat}</td>
+            <td>${p2024}</td>
+            <td>${p2025}</td>
+            <td class="${trendClass}">${varText}</td>
+            <td>${indicador}</td>
+            <td><span class="badge ${badgeClass} badge-conf">${confianca}</span></td>
+            <td>${venda}</td>
+          `;
+          tbody.appendChild(tr);
+        });
 
-        // Oportunidades
-        if (confianca === 'Alta' && variacao > 5) {
+        // Paginação
+        pagination.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
           const li = document.createElement('li');
-          li.className = 'list-group-item d-flex justify-content-between';
-          li.innerHTML = `<span>${item} (${cat})</span><span class="badge bg-success">↑ ${varText}</span>`;
-          oppList.appendChild(li);
+          li.className = `page-item ${i === page ? 'active' : ''}`;
+          li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+          pagination.appendChild(li);
         }
+        pagination.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', e => {
+            e.preventDefault();
+            showPage(parseInt(e.target.dataset.page));
+          });
+        });
+      }
+      showPage(1);
+    }
 
-        // Gráfico
-        if (Math.abs(variacao) > 3) {
-          chartLabels.push(item.substring(0, 15) + (item.length > 15 ? '...' : ''));
-          chartData.push(variacao);
-          chartColors.push(variacao >= 0 ? '#28a745' : '#dc3545');
+    function renderTop10(data) {
+      const counts = {};
+      data.forEach(([item]) => counts[item] = (counts[item] || 0) + 1);
+      const sorted = Object.entries(counts)
+        .map(([item, volume]) => {
+          const entry = data.find(d => d[0] === item);
+          return [item, volume, entry ? entry[7] : 'N/A'];
+        })
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+
+      const tbody = document.getElementById('top10Body');
+      tbody.innerHTML = sorted.map(([item, volume, price], i) => `
+        <tr>
+          <td><strong>#${i + 1}</strong></td>
+          <td>${item}</td>
+          <td><strong>${volume}x</strong></td>
+          <td>${price}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderTopWTB(data) {
+      const wtb = data.filter(row => row[1] === 'WTB' || row[1].includes('WTB'));
+      const counts = {};
+      wtb.forEach(row => {
+        const item = row[0];
+        const price = parseFloat(row[7]) || 0;
+        if (!counts[item] || price > counts[item].price) {
+          counts[item] = { count: (counts[item]?.count || 0) + 1, price };
         }
       });
+      const sorted = Object.entries(counts)
+        .map(([item, { count, price }]) => [item, count, price])
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
 
-      // Gráfico
+      const tbody = document.getElementById('wtbBody');
+      tbody.innerHTML = sorted.map(([item, count, price], i) => `
+        <tr>
+          <td><strong>#${i + 1}</strong></td>
+          <td>${item}</td>
+          <td><strong>${count}x</strong></td>
+          <td>${price}s</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOpportunities(data) {
+      const opps = data
+        .filter(row => row[6] === 'Alta' && Math.abs(row[4]) > 10)
+        .sort((a, b) => b[4] - a[4])
+        .slice(0, 15);
+
+      const list = document.getElementById('opportunitiesList');
+      if (opps.length === 0) {
+        list.innerHTML = '<li class="list-group-item text-muted">Nenhuma oportunidade no momento.</li>';
+        return;
+      }
+      list.innerHTML = opps.map(row => {
+        const [item, cat, , p2025, variacao, , , venda] = row;
+        const icon = variacao > 0 ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-right text-danger';
+        return `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>${item}</strong> <small class="text-muted">(${cat})</small>
+            </div>
+            <div>
+              <i class="bi ${icon}"></i> 
+              <strong>${variacao > 0 ? '+' : ''}${variacao.toFixed(1)}%</strong> 
+              → <strong>${venda}</strong>
+            </div>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function renderChart(data) {
+      const filtered = data.filter(row => Math.abs(row[4]) > 3);
+      const labels = filtered.map(row => row[0].substring(0, 18) + (row[0].length > 18 ? '...' : ''));
+      const values = filtered.map(row => row[4]);
+      const colors = values.map(v => v >= 0 ? 'rgba(40, 167, 69, 0.8)' : 'rgba(220, 53, 69, 0.8)');
+
       new Chart(document.getElementById('priceChart'), {
         type: 'bar',
-        data: {
-          labels: chartLabels,
-          datasets: [{
-            label: 'Variação 2024 → 2025 (%)',
-            data: chartData,
-            backgroundColor: chartColors,
-            borderRadius: 4
-          }]
-        },
+        data: { labels, datasets: [{ label: 'Variação (%)', data: values, backgroundColor: colors, borderRadius: 4 }] },
         options: {
           responsive: true,
           plugins: { legend: { display: false } },
           scales: { y: { beginAtZero: true } }
         }
       });
-
-      if (oppList.children.length === 0) {
-        oppList.innerHTML = '<li class="list-group-item text-muted">Nenhuma oportunidade com alta confiança no momento.</li>';
-      }
     }
   </script>
-
-  <footer class="text-center py-4 text-muted">
-    Atualizado automaticamente — A Guilda © 2025
-  </footer>
 </body>
 </html>
