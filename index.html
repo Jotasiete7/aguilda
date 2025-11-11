@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
+    /* Modo Escuro (Padrão) */
+    :root[data-theme="dark"] {
       --bg: #1a1a1a;
       --card: #2d2d2d;
       --text: #f0f0f0;
@@ -16,32 +17,60 @@
       --success: #28a745;
       --danger: #dc3545;
       --warning: #ffc107;
+      --table-bg: #3a3a3a;
+      --link: #ffffff;
+      --page-active: #28a745;
     }
-    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; }
+    /* Modo Claro */
+    :root[data-theme="light"] {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --text: #212529;
+      --border: #dee2e6;
+      --success: #198754;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --table-bg: #e9ecef;
+      --link: #0d6efd;
+      --page-active: #0d6efd;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; transition: all 0.3s ease; }
     .container { max-width: 1500px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
-    .table { font-size: 0.9rem; }
-    .table th { background: #3a3a3a; position: sticky; top: 0; z-index: 10; }
+    .table { font-size: 0.9rem; color: var(--text); }
+    .table th { background: var(--table-bg); position: sticky; top: 0; z-index: 10; color: var(--text); }
     .trend-up { color: var(--success); font-weight: bold; }
     .trend-down { color: var(--danger); font-weight: bold; }
     .badge-conf { font-size: 0.7rem; }
     .loading { text-align: center; padding: 3rem; font-size: 1.2rem; }
     .error { color: var(--danger); font-weight: bold; text-align: center; }
-    .chart-container { position: relative; height: 400px; }
+    .chart-container { position: relative; height: 400px; background: var(--card); }
     .nav-link { color: var(--text); }
-    .nav-link.active { background: #444; border-radius: 8px; }
+    .nav-link.active { background: var(--table-bg); border-radius: 8px; color: var(--text); }
     .pagination .page-link { background: var(--card); border-color: var(--border); color: var(--text); }
-    .pagination .page-item.active .page-link { background: var(--success); border-color: var(--success); }
+    .pagination .page-item.active .page-link { background: var(--page-active); border-color: var(--page-active); color: #fff; }
+    .pagination .page-link:hover { color: var(--link); background: var(--border); }
+    .theme-toggle { cursor: pointer; }
+    .nav-pills .nav-link { transition: background 0.3s; }
+    .list-group-item { background: var(--card); color: var(--text); border-color: var(--border); }
+    .text-muted { color: #6c757d !important; }
   </style>
 </head>
-<body>
+<body data-theme="dark"> <!-- Padrão escuro -->
   <div class="container py-4">
-    <!-- Header -->
-    <div class="text-center mb-5">
+    <!-- Header com Links no Topo -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
       <h1 class="display-5 fw-bold">A GUILDA - DASHBOARD DE PREÇOS NFI 2025</h1>
-      <p class="text-muted">Análise de Armas e Itens 2025 (Beta) — Atualizado automaticamente</p>
-      <div id="lastUpdate" class="text-muted small"></div>
+      <div class="d-flex align-items-center">
+        <a href="recipes.html" class="btn btn-outline-secondary me-2">Receitas</a>
+        <a href="weapons-guide.html" class="btn btn-outline-secondary me-2">Guia de Armas</a>
+        <button id="themeToggle" class="btn btn-outline-secondary theme-toggle">
+          <i class="bi bi-moon-stars-fill"></i> Modo Escuro
+        </button>
+      </div>
     </div>
+    <p class="text-center text-muted">Análise de Armas e Itens 2025 (Beta) — Atualizado automaticamente</p>
+    <div id="lastUpdate" class="text-center text-muted small mb-4"></div>
 
     <!-- Loading & Error -->
     <div id="loading" class="loading">Carregando dados do mercado... Aguarde</div>
@@ -58,13 +87,13 @@
       </ul>
 
       <div class="tab-content">
-        <!-- Tabela de Preços -->
+        <!-- Tabela de Preços (Principal, com Paginação Melhorada) -->
         <div class="tab-pane fade show active" id="tab-precos">
           <div class="card mb-4">
             <div class="card-body">
               <h5>Tabela de Preços</h5>
-              <div class="table-responsive">
-                <table class="table table-dark table-hover" id="priceTable">
+              <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table class="table table-hover" id="priceTable">
                   <thead>
                     <tr>
                       <th>Item</th>
@@ -80,7 +109,7 @@
                   <tbody></tbody>
                 </table>
               </div>
-              <nav aria-label="Page navigation">
+              <nav aria-label="Page navigation" class="mt-3">
                 <ul class="pagination justify-content-center" id="pagination"></ul>
               </nav>
             </div>
@@ -93,7 +122,7 @@
             <div class="card-body">
               <h5>Top 10 Itens Mais Negociados (2025)</h5>
               <div class="table-responsive">
-                <table class="table table-dark">
+                <table class="table table-hover">
                   <thead><tr><th>#</th><th>Item</th><th>Volume</th><th>Preço Médio</th></tr></thead>
                   <tbody id="top10Body"></tbody>
                 </table>
@@ -108,7 +137,7 @@
             <div class="card-body">
               <h5>Top 10 Itens Mais Procurados (WTB)</h5>
               <div class="table-responsive">
-                <table class="table table-dark">
+                <table class="table table-hover">
                   <thead><tr><th>#</th><th>Item</th><th>Buscas</th><th>Preço Máx. Oferecido</th></tr></thead>
                   <tbody id="wtbBody"></tbody>
                 </table>
@@ -140,15 +169,27 @@
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- Footer (sem links repetidos) -->
   <footer class="text-center py-4 text-muted small">
-    Atualizado automaticamente — <strong>A Guilda © 2025</strong> | 
-    <a href="recipes.html" class="text-decoration-none">Receitas</a> | 
-    <a href="weapons-guide.html" class="text-decoration-none">Guia de Armas</a>
+    Atualizado automaticamente — <strong>A Guilda © 2025</strong>
   </footer>
 
-  <!-- Carrega data.js com cache buster -->
+  <!-- Scripts -->
   <script>
+    // Toggle Modo Claro/Escuro
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      const theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.body.dataset.theme = theme;
+      themeToggle.innerHTML = theme === 'dark' ? '<i class="bi bi-moon-stars-fill"></i> Modo Escuro' : '<i class="bi bi-sun-fill"></i> Modo Claro';
+      localStorage.setItem('theme', theme);
+    });
+    // Carrega tema salvo
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.dataset.theme = savedTheme;
+    themeToggle.innerHTML = savedTheme === 'dark' ? '<i class="bi bi-moon-stars-fill"></i> Modo Escuro' : '<i class="bi bi-sun-fill"></i> Modo Claro';
+
+    // Carrega data.js com cache buster
     const cacheBuster = new Date().getTime();
     const script = document.createElement('script');
     script.src = `data/processed/data.js?v=${cacheBuster}`;
