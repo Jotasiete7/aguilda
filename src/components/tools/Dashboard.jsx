@@ -71,7 +71,7 @@ const Dashboard = () => {
                 {
                     label: 'Variação %',
                     data: top10.map(r => r[4]),
-                    backgroundColor: top10.map(r => r[5] === "▲" ? '#2e8b57' : r[5] === "▼" ? '#B00000' : '#3498db'),
+                    backgroundColor: top10.map(r => r[5] === "▲" ? '#B00000' : r[5] === "▼" ? '#B00000' : '#B00000'),
                 },
             ],
         };
@@ -199,10 +199,10 @@ const Dashboard = () => {
                                     <td>{row[1]}</td>
                                     <td>{formatPrice(row[2])}</td>
                                     <td>{formatPrice(row[3])}</td>
-                                    <td style={{ color: row[4] > 0 ? '#2e8b57' : row[4] < 0 ? '#B00000' : '#3498db' }}>
+                                    <td style={{ color: row[4] > 0 ? '#B00000' : row[4] < 0 ? '#B00000' : '#B00000' }}>
                                         {row[4]}%
                                     </td>
-                                    <td style={{ color: row[5] === "▲" ? '#2e8b57' : row[5] === "▼" ? '#B00000' : '#3498db', fontSize: '1.2rem' }}>
+                                    <td style={{ color: row[5] === "▲" ? '#B00000' : row[5] === "▼" ? '#B00000' : '#B00000', fontSize: '1.2rem' }}>
                                         {row[5]}
                                     </td>
                                     <td>{row[6]}</td>
