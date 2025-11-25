@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#0D0D0D"/>
+  <!-- Fleur-de-lis (⚜️) symbol -->
+  <g fill="#E0E0E0" stroke="#B00000" stroke-width="0.5">
+    <!-- Center petal -->
+    <path d="M16 6 Q16 10, 14 14 L14 18 L18 18 L18 14 Q16 10, 16 6 Z"/>
+    <!-- Left petal -->
+    <path d="M10 10 Q8 12, 9 16 L11 17 L12 14 Q11 12, 10 10 Z"/>
+    <!-- Right petal -->
+    <path d="M22 10 Q24 12, 23 16 L21 17 L20 14 Q21 12, 22 10 Z"/>
+    <!-- Base -->
+    <rect x="14" y="18" width="4" height="6" rx="0.5"/>
+    <!-- Bottom flourish -->
+    <path d="M12 24 Q16 26, 20 24 L19 25 Q16 26, 13 25 Z"/>
+  </g>
+</svg>
