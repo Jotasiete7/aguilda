@@ -18,6 +18,38 @@
             margin: 0;
             background: #0D0D0D;
             font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* SIDEBAR - Fixed Width */
+        .sidebar {
+            width: 200px;
+            height: 100vh;
+            background: #0D0D0D;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        /* MAP CONTAINER - Flex Grow */
+        .map-container {
+            flex: 1;
+            flex-grow: 1;
+            min-width: 0;
+            height: 100vh;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
             background: #0e0e0e;
             cursor: crosshair;
         }
@@ -371,11 +403,13 @@
             'unique': { icon: '🐲', color: '#ff1744', group: 'mobs', label: 'Unique' }
         };
 
-        var dado            var layers = L.layerGroup().addTo(map);
+        var dados = [];
+        var layers = L.layerGroup().addTo(map);
 
-        var filtrosAti                deeds_active: true,
+        var filtrosAtivos = {
+            deeds_active: true,
             deeds_fallen: true,
-            ue,
+            rift: true,
             ores: true,
             botany: true,
             mobs: true
