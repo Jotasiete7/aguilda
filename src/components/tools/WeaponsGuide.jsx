@@ -28,7 +28,7 @@ const WeaponsGuide = () => {
             {/* Main Content - Iframe */}
             <div className="wg-content-wrapper">
                 <iframe
-                    src="/weapons-guide.html"
+                    src={`${import.meta.env.BASE_URL}weapons-guide.html`}
                     title="Weapons Guide"
                     style={{
                         width: '100%',

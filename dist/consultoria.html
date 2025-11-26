@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wurm Consultant PRO - Jotasiete</title>
+    
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Environment Setup -->
+    <script>
+        window.process = { env: { NODE_ENV: 'production' } };
+    </script>
+
+    <!-- Dependencies (Switched to CDNJS/Cloudflare for maximum stability) -->
+    
+    <!-- 1. React & ReactDOM -->
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- 2. Prop-types (Critical for Recharts) -->
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+    
+    <!-- 3. Recharts (Using v2.10.3 - known for high stability in standalone files) -->
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.min.js"></script>
+    
+    <!-- 4. Lucide Icons -->
+    <script crossorigin="anonymous" src="https://unpkg.com/lucide-react@0.292.0/dist/umd/lucide-react.min.js"></script>
+    
+    <!-- 5. PDF Tools (Updated to CDNJS with CrossOrigin to fix Script Error) -->
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- 6. Babel (Compiler) -->
+    <script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+    <style>
+      body { font-family: 'Roboto', sans-serif; background-color: #f3f4f6; }
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #555; }
+      .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      
+      /* Loading Overlay */
+      #loading-overlay {
+        position: fixed; inset: 0; background: #0f172a; z-index: 9999;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: white; transition: opacity 0.5s;
+      }
+      .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f59e0b; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <!-- Loading / Error Screen -->
+    <div id="loading-overlay">
+        <div class="loader" id="spinner"></div>
+        <h2 class="mt-4 font-mono text-sm" id="loading-text">Carregando J7 Engine...</h2>
+        <div id="error-msg" style="display:none; color: #ef4444; margin-top: 20px; max-width: 80%; text-align: center; background: rgba(255,0,0,0.1); padding: 20px; border-radius: 8px; border: 1px solid #ef4444;"></div>
+    </div>
+
+    <div id="root"></div>
+
+    <!-- Debug Handler -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            if(msg.includes('ResizeObserver')) return; // Ignore harmless resize errors
+            
+            const el = document.getElementById('error-msg');
+            const spinner = document.getElementById('spinner');
+            if(el && spinner) {
+                spinner.style.display = 'none';
+                el.style.display = 'block';
+                // Only show detailed error if it's not the generic "Script error."
+                const displayMsg = msg === "Script error." 
+                    ? "Erro de segurança de script (CORS). Tentando recuperar... Se persistir, verifique sua conexão." 
+                    : msg;
+                
+                el.innerHTML = `
+                    <strong style="font-size: 1.2em;">ALERTA DE SISTEMA</strong><br><br>
+                    ${displayMsg}<br>
+                `;
+            }
+        };
+    </script>
+
+    <!-- APPLICATION LOGIC -->
+    <script type="text/babel" data-presets="typescript,react">
+        // 1. GLOBAL IMPORTS MAPPING
+        const { useState, useEffect, useRef } = React;
+        const { createRoot } = ReactDOM;
+        
+        // --- ROBUST LIBRARY LOADING ---
+        
+        // 1. Recharts Fallback
+        const RechartsLib = window.Recharts || window.recharts;
+        const { 
+            LineChart, Line, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Legend, 
+            ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, ScatterChart, Scatter,
+            AreaChart, Area
+        } = RechartsLib || {
+            LineChart: () => null, Line: () => null, XAxis: () => null, YAxis: () => null, ZAxis: () => null,
+            CartesianGrid: () => null, Tooltip: () => null, Legend: () => null, 
+            ResponsiveContainer: ({children}) => <div className="p-4 text-center text-slate-400">Gráfico não carregado</div>, 
+            BarChart: () => null, Bar: () => null, PieChart: () => null, Pie: () => null, 
+            Cell: () => null, ComposedChart: () => null, ScatterChart: () => null, Scatter: () => null,
+            AreaChart: () => null, Area: () => null
+        };
+
+        // 2. Icons Fallback
+        const LucideLib = window.lucideReact || {};
+        const FallbackIcon = ({size = 16, className}) => <span className={`inline-block bg-slate-200 ${className}`} style={{width: size, height: size}}/>;
+        const Icons = new Proxy(LucideLib, {
+            get: (target, prop) => target[prop] || FallbackIcon
+        });
+
+        const { 
+            FileText, Upload, Download, Activity, Users, TrendingUp, TrendingDown,
+            AlertTriangle, CheckCircle, LayoutDashboard, Search, Briefcase, 
+            PieChart: PieIcon, ArrowUpRight, ArrowDownRight, Target, Trash2,
+            WifiOff, Zap, Crosshair, BarChart2, Award, Scale, Flame, ShoppingBag, Tag,
+            Camera, Image: ImageIcon, FileDown
+        } = Icons;
+
+        // 3. PDF & Canvas Tools
+        const getJsPDF = () => {
+            if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+            if (window.jspdf) return window.jspdf;
+            return null;
+        };
+
+        // 2. LOGIC & CONSTANTS
+        const PROFILES = {
+            ARCHAEOLOGIST: {
+                keywords: ["fragment", "frag", "statue fragment", "colossus fragment", "pillar fragment", "guard tower fragment", "obelisk fragment", "statuette", "fo statuette", "vynora statuette", "magranon statuette", "libila statuette", "gold statuette", "silver statuette", "marble statuette", "left arm", "right arm", "left leg", "right leg", "torso", "head", "colossus piece", "archaeological report", "complete report", "papyrus", "journal", "trowel", "brush", "metal brush", "spatula", "sarcophagus", "cache", "restoration", "rift stone", "rift crystal"],
+                highValue: ["complete report", "statuette", "sarcophagus", "rare", "supreme", "fantastic", "gold statuette", "colossus piece"],
+            },
+            BLACKSMITH: {
+                keywords: ["lump", "iron lump", "steel lump", "pickaxe", "shovel", "hatchet", "hammer", "anvil", "large anvil", "nails", "rivets", "blacksmithing"],
+                highValue: ["steel lump", "rare", "supreme", "100ql", "90ql"],
+            },
+            WEAPONSMITH: {
+                keywords: ["sword", "longsword", "two handed sword", "huge axe", "large axe", "halberd", "spear", "scythe", "knife", "carving knife", "butcher knife", "weapon heads", "blades smithing"],
+                highValue: ["rare sword", "rare axe", "supreme", "bloodthirst", "lt", "nimbleness", "aosp"],
+            },
+            ARMOURSMITH: {
+                keywords: ["plate", "chain", "armour", "helmet", "gauntlet", "great helm", "chain coif", "plate set", "chain armour smithing", "plate armour smithing"],
+                highValue: ["plate set", "rare plate", "supreme helm", "drake", "dragon scale"],
+            },
+            JEWELER: {
+                keywords: ["ring", "pendant", "necklace", "bracelet", "opal", "emerald", "ruby", "diamond", "sapphire", "jewelry smithing"],
+                highValue: ["diamond", "ruby", "rare ring", "aosp", "mind stealer"],
+            },
+            LOCKSMITH: {
+                keywords: ["lockpick", "lockpicking", "locksmithing"],
+                highValue: ["rare lockpick", "supreme"],
+            },
+            CARPENTER: {
+                keywords: ["plank", "log", "shaft", "tenon", "peg", "bow", "cart", "wagon", "bed", "table", "chair", "chest", "crate", "barrel", "mallet", "saw", "spindle"],
+                highValue: ["large cart", "wagon", "rare", "supreme", "oak", "cedar"],
+            },
+            FINE_CARPENTRY: {
+                keywords: ["fine carp", "fine carpentry", "bookshelf", "spinning wheel", "cupboard", "wardrobe", "canopy bed"],
+                highValue: ["royal throne", "rare", "supreme"],
+            },
+            SHIPBUILDER: {
+                keywords: ["keel", "hull plank", "stern", "belaying pin", "ship", "knarr", "corbita", "caravel", "cog", "sail", "ship building"],
+                highValue: ["knarr", "corbita", "caravel", "rare sail", "100ql keel"],
+            },
+            TOYMAKER: {
+                keywords: ["toy making", "yoyo", "puppeteering", "checker board", "chess board"],
+                highValue: ["rare", "supreme"],
+            },
+            MASONRY: {
+                keywords: ["brick", "stone", "mortar", "shards", "slab", "marble", "slate", "stone chisel", "stone cutting"],
+                highValue: ["marble", "slate", "rare statue"],
+            },
+            POTTERY: {
+                keywords: ["clay", "pottery", "bowl", "jar", "amphora", "tile", "shingle"],
+                highValue: ["rare brick", "100ql clay"],
+            },
+            TAILOR: {
+                keywords: ["cotton", "wemp", "cloth", "square cloth", "string", "needle", "loom", "cloth tailoring"],
+                highValue: ["rare rug", "supreme tapestry"],
+            },
+            LEATHERWORKER: {
+                keywords: ["leather", "hide", "leatherworking", "saddle", "studded", "leather armour"],
+                highValue: ["drake hide", "dragon hide", "rare saddle"],
+            },
+            COOK: {
+                keywords: ["meal", "pie", "soup", "casserole", "hot food cooking"],
+                highValue: ["rare cheese", "100ql meal"],
+            },
+            BAKER: {
+                keywords: ["baking", "bread", "cake"],
+                highValue: ["supreme pie"],
+            },
+            DAIRY: {
+                keywords: ["cheese", "milk", "butter", "cream", "dairy food making"],
+                highValue: ["rare cheese"],
+            },
+            BEVERAGES: {
+                keywords: ["beverages", "wine", "beer", "oil"],
+                highValue: ["rare potion"],
+            },
+            ALCHEMIST: {
+                keywords: ["alchemy", "transmutation liquid", "tar", "source", "lye", "tannin", "potion", "salve"],
+                highValue: ["source", "100ql oil"],
+            },
+            ROPES: {
+                keywords: ["ropemaking", "rope", "coiled rope", "rope tool"],
+                highValue: ["rare rope"],
+            },
+            MILLER: {
+                keywords: ["milling", "flour"],
+                highValue: ["100ql flour"],
+            },
+            COALMAKER: {
+                keywords: ["coal making", "charcoal"],
+                highValue: ["100ql charcoal"],
+            },
+            PROSPECTOR: {
+                keywords: ["prospecting"],
+                highValue: ["high ql vein"],
+            },
+            MINER: {
+                keywords: ["mining", "ore"],
+                highValue: ["adamantine shard"],
+            },
+            WOODCUTTER: {
+                keywords: ["woodcutting", "log"],
+                highValue: ["rare log"],
+            },
+            FARMER: {
+                keywords: ["farming", "gardening", "sprout", "seedling", "pumpkin", "corn", "wheat", "grape", "olive"],
+                highValue: ["rare sprout", "100ql pumpkin"],
+            },
+            FISHERMAN: {
+                keywords: ["fishing", "fish", "net", "rod"],
+                highValue: ["rare fish"],
+            },
+            PRIEST: {
+                keywords: ["statuette", "vessel", "link", "prayer", "channeling"],
+                highValue: ["gold statuette", "rare vessel"],
+            }
+        };
+
+        const parseCurrency = (text) => {
+            if (!text) return null;
+            const pattern = /(\d+(?:\.\d+)?)\s*(g|s|c|gold|silver|copper)/gi;
+            let total = 0;
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                const val = parseFloat(match[1]);
+                const unit = match[2].toLowerCase()[0];
+                if (unit === 'g') total += val * 10000;
+                else if (unit === 's') total += val * 100;
+                else if (unit === 'c') total += val;
+            }
+            return total > 0 ? total : null;
+        };
+
+        const extractQuality = (text) => {
+            const m = text.match(/(\d{1,3})\s*ql|ql\s*[:]?\s*(\d{1,3})/i);
+            if (m) return parseInt(m[1] || m[2]);
+            return null;
+        };
+
+        const detectRarity = (text) => {
+            const t = text.toLowerCase();
+            if (t.includes("fantastic")) return "FANTASTIC";
+            if (t.includes("supreme")) return "SUPREME";
+            if (t.includes("rare")) return "RARE";
+            return "COMMON";
+        };
+
+        const generateMockData = (profileKey) => {
+            const keywords = PROFILES[profileKey].keywords;
+            const players = ["TraderJoe", "CraftyAlice", "SmithyBob", "MerchantMike", "LuxuryLinda", "NewbieNed", "BaronVonLoot", "SpeedySam", "PanicPaul"];
+            let data = "";
+            const now = new Date();
+            
+            for (let i = 0; i < 300; i++) {
+                const date = new Date(now.getTime() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000 - Math.floor(Math.random() * 24) * 60 * 60 * 1000);
+                const dateStr = date.toISOString().slice(0, 19).replace("T", " ");
+                const player = players[Math.floor(Math.random() * players.length)];
+                const isSupply = Math.random() > 0.4; 
+                const kw = keywords[Math.floor(Math.random() * keywords.length)];
+                const ql = Math.floor(Math.random() * 50) + 50;
+                let price = Math.floor(Math.random() * 500) + 10;
+                
+                if(kw === keywords[0] && i % 15 === 0) {
+                     if(isSupply) price = 20;
+                     else price = 45;
+                }
+
+                const type = isSupply ? "selling" : "buying";
+                const rarity = Math.random() > 0.95 ? "rare" : "";
+                const coin = Math.random() > 0.8 ? "s" : "c";
+                
+                const urgency = ["ASAP", "FAST", "URGENT", "NEED", "NOW!"][Math.floor(Math.random() * 5)] || "";
+                const filler = urgency && Math.random() > 0.7 ? urgency : "";
+
+                const msg = `[${date.getHours().toString().padStart(2, '0')}:00] ${type} ${rarity} ${ql}ql ${kw} for ${price}${coin} ${filler}`;
+                data += `${dateStr} | Event | ${player} | ${msg}\n`;
+            }
+            return data;
+        };
+
+        // 4. MAIN REACT APP
+        const App = () => {
+            const [profile, setProfile] = useState("BLACKSMITH");
+            const [fileContent, setFileContent] = useState("");
+            const [fileName, setFileName] = useState("");
+            const [records, setRecords] = useState([]);
+            const [analysis, setAnalysis] = useState(null);
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [isExporting, setIsExporting] = useState(false);
+            const dashboardRef = useRef(null);
+
+            useEffect(() => {
+                const loader = document.getElementById('loading-overlay');
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 500);
+                }
+            }, []);
+
+            const processData = () => {
+                setIsProcessing(true);
+                setTimeout(() => {
+                    try {
+                        if(!fileContent) throw new Error("Nenhum arquivo carregado.");
+                        
+                        const rawLines = fileContent.split('\n');
+                        const lines = rawLines.length > 50000 ? rawLines.slice(-50000) : rawLines;
+
+                        const newRecords = [];
+                        const profData = PROFILES[profile];
+
+                        lines.forEach((line, idx) => {
+                            const lower = line.toLowerCase();
+                            if (!profData.keywords.some(kw => lower.includes(kw))) return;
+                            const isSupply = ["wts", "selling", "s>"].some(x => lower.includes(x));
+                            const isDemand = ["wtb", "buying", "b>"].some(x => lower.includes(x));
+                            if (!isSupply && !isDemand) return;
+
+                            const parts = line.split('|');
+                            if (parts.length < 4) return;
+
+                            try {
+                                const date = new Date(parts[0].trim());
+                                const player = parts[2].trim();
+                                const msg = parts[3].trim();
+                                const productKw = profData.keywords.find(kw => lower.includes(kw)) || "Unknown";
+                                const product = productKw.charAt(0).toUpperCase() + productKw.slice(1);
+                                
+                                newRecords.push({
+                                    id: idx,
+                                    date,
+                                    player,
+                                    type: isSupply ? "SUPPLY" : "DEMAND",
+                                    product,
+                                    price: parseCurrency(msg),
+                                    ql: extractQuality(msg),
+                                    rarity: detectRarity(msg),
+                                    isHighValue: profData.highValue.some(hv => lower.includes(hv)),
+                                    message: msg
+                                });
+                            } catch (e) { /* ignore */ }
+                        });
+
+                        setRecords(newRecords);
+                        runAnalysis(newRecords);
+                    } catch (err) {
+                        console.error(err);
+                        alert("Erro ao processar dados: " + err.message);
+                    } finally {
+                        setIsProcessing(false);
+                    }
+                }, 100);
+            };
+
+            const runAnalysis = (data) => {
+                if (data.length === 0) return;
+
+                const demandMap = new Map();
+                const supplyMap = new Map();
+                const prodStatsMap = new Map();
+                const compMap = new Map();
+                const tierMap = {
+                    "Básico (0-50)": { sum: 0, count: 0 },
+                    "Padrão (50-70)": { sum: 0, count: 0 },
+                    "Alto (70-90)": { sum: 0, count: 0 },
+                    "Obra-Prima (90+)": { sum: 0, count: 0 }
+                };
+                
+                const arbitrageMap = {};
+                const playerDemandHistory = {};
+                const trendsMap = new Map();
+                const itemVelocity = {}; 
+                
+                let minTime = data[0].date.getTime();
+                let maxTime = data[data.length - 1].date.getTime();
+                let totalDuration = maxTime - minTime;
+                let recentThreshold = maxTime - (totalDuration * 0.2); 
+
+                let totalMsgCount = 0;
+                let urgentMsgCount = 0;
+                const urgentWords = ["urgent", "fast", "asap", "need", "now", "paying extra", "wtb"];
+
+                data.forEach(r => {
+                    totalMsgCount++;
+                    const msgLower = r.message.toLowerCase();
+                    if(urgentWords.some(w => msgLower.includes(w))) urgentMsgCount++;
+                    const timestamp = r.date.getTime();
+
+                    if (!itemVelocity[r.product]) itemVelocity[r.product] = { recent: 0, total: 0 };
+                    itemVelocity[r.product].total++;
+                    if (timestamp >= recentThreshold) itemVelocity[r.product].recent++;
+
+                    if (r.type === "DEMAND") {
+                        demandMap.set(r.product, (demandMap.get(r.product) || 0) + 1);
+                        
+                        if(!playerDemandHistory[r.player]) playerDemandHistory[r.player] = { timestamps: [], items: {} };
+                        playerDemandHistory[r.player].timestamps.push(timestamp);
+                        playerDemandHistory[r.player].items[r.product] = (playerDemandHistory[r.player].items[r.product] || 0) + 1;
+
+                        if(r.price) {
+                            if(!arbitrageMap[r.product]) arbitrageMap[r.product] = { maxBuy: null, minSell: null };
+                            if(!arbitrageMap[r.product].maxBuy || r.price > arbitrageMap[r.product].maxBuy.price) {
+                                arbitrageMap[r.product].maxBuy = { price: r.price, player: r.player };
+                            }
+                        }
+
+                    } else {
+                        supplyMap.set(r.product, (supplyMap.get(r.product) || 0) + 1);
+                        
+                        if(r.price) {
+                            const s = prodStatsMap.get(r.product) || { sum: 0, count: 0 };
+                            s.sum += r.price;
+                            s.count++;
+                            prodStatsMap.set(r.product, s);
+                        }
+
+                        const c = compMap.get(r.player) || { count: 0, totalPrice: 0, priceCount: 0 };
+                        c.count++;
+                        if (r.price) { c.totalPrice += r.price; c.priceCount++; }
+                        compMap.set(r.player, c);
+
+                        if(r.price && r.ql !== null) {
+                            let tier = "Básico (0-50)";
+                            if(r.ql >= 90) tier = "Obra-Prima (90+)";
+                            else if(r.ql >= 70) tier = "Alto (70-90)";
+                            else if(r.ql >= 50) tier = "Padrão (50-70)";
+                            tierMap[tier].sum += r.price;
+                            tierMap[tier].count++;
+                        }
+
+                        if(r.price) {
+                            if(!arbitrageMap[r.product]) arbitrageMap[r.product] = { maxBuy: null, minSell: null };
+                            if(!arbitrageMap[r.product].minSell || r.price < arbitrageMap[r.product].minSell.price) {
+                                arbitrageMap[r.product].minSell = { price: r.price, player: r.player };
+                            }
+                        }
+                    }
+
+                    const day = r.date.toISOString().split('T')[0];
+                    const t = trendsMap.get(day) || { total: 0, count: 0, vol: 0 };
+                    t.vol++;
+                    if (r.price && r.type === "SUPPLY") { t.total += r.price; t.count++; }
+                    trendsMap.set(day, t);
+                });
+
+                const topDemand = Array.from(demandMap.entries())
+                    .map(([product, count]) => ({ product, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5);
+
+                const topSupply = Array.from(supplyMap.entries())
+                    .map(([product, count]) => ({ product, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5);
+
+                const velocityList = [];
+                const timeRatio = 0.2; 
+                Object.entries(itemVelocity).forEach(([prod, stats]) => {
+                    if(stats.total < 5) return; 
+                    const expectedRecent = stats.total * timeRatio;
+                    const actualRecent = stats.recent;
+                    const pvi = actualRecent / (expectedRecent || 1);
+                    if(pvi > 1.2) { 
+                        velocityList.push({
+                            product: prod,
+                            pvi: pvi,
+                            recent: stats.recent,
+                            total: stats.total
+                        });
+                    }
+                });
+                velocityList.sort((a,b) => b.pvi - a.pvi);
+
+                const globalAvgPrice = Array.from(prodStatsMap.values()).reduce((a, b) => a + b.sum, 0) / Math.max(1, Array.from(prodStatsMap.values()).reduce((a, b) => a + b.count, 0));
+                const competitors = Array.from(compMap.entries()).map(([player, stats]) => {
+                    const avg = stats.priceCount > 0 ? stats.totalPrice / stats.priceCount : 0;
+                    let strategy = "Médio";
+                    if (avg > 0) {
+                        if (avg < globalAvgPrice * 0.85) strategy = "Baixo Custo";
+                        else if (avg > globalAvgPrice * 1.15) strategy = "Premium";
+                    }
+                    return { player, volume: stats.count, avgPrice: avg, strategy };
+                }).sort((a, b) => b.volume - a.volume);
+
+                const trends = Array.from(trendsMap.entries()).map(([date, stats]) => ({
+                    date,
+                    avgPrice: stats.count > 0 ? stats.total / stats.count : 0,
+                    volume: stats.vol
+                })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                const tierData = Object.entries(tierMap).map(([name, stats]) => ({
+                    name,
+                    avgPrice: stats.count > 0 ? parseFloat((stats.sum / stats.count).toFixed(2)) : 0,
+                    count: stats.count
+                }));
+
+                const arbitrageOps = [];
+                Object.entries(arbitrageMap).forEach(([prod, stats]) => {
+                    if(stats.maxBuy && stats.minSell && stats.maxBuy.price > stats.minSell.price) {
+                        const margin = stats.maxBuy.price - stats.minSell.price;
+                        const roi = (margin / stats.minSell.price) * 100;
+                        if(roi > 15) {
+                            arbitrageOps.push({
+                                product: prod,
+                                buyFrom: stats.minSell.player,
+                                buyPrice: stats.minSell.price,
+                                sellTo: stats.maxBuy.player,
+                                sellPrice: stats.maxBuy.price,
+                                margin: margin,
+                                roi: roi
+                            });
+                        }
+                    }
+                });
+                arbitrageOps.sort((a,b) => b.margin - a.margin);
+
+                const persistenceList = [];
+                Object.entries(playerDemandHistory).forEach(([player, stats]) => {
+                    if(stats.timestamps.length < 2) return;
+                    const topItem = Object.entries(stats.items).reduce((a, b) => b[1] > a[1] ? b : a)[0];
+                    persistenceList.push({
+                        player,
+                        score: stats.timestamps.length,
+                        topItem,
+                        count: stats.timestamps.length
+                    });
+                });
+                persistenceList.sort((a,b) => b.score - a.score);
+
+                const panicRatio = (urgentMsgCount / (totalMsgCount || 1)) * 100;
+                const sentimentScore = Math.min(100, Math.max(0, 30 + panicRatio * 5));
+                let sentimentLabel = "Neutro";
+                if(sentimentScore > 75) sentimentLabel = "Pânico";
+                else if(sentimentScore > 60) sentimentLabel = "Aquecido";
+                else if(sentimentScore < 40) sentimentLabel = "Lento";
+
+                setAnalysis({
+                    totalVolume: data.length,
+                    supplyCount: data.filter(r => r.type === "SUPPLY").length,
+                    demandCount: data.filter(r => r.type === "DEMAND").length,
+                    gaps: [],
+                    competitors,
+                    trends,
+                    tierData,
+                    persistenceList,
+                    arbitrageOps,
+                    sentiment: { score: sentimentScore, label: sentimentLabel },
+                    velocity: velocityList,
+                    topDemand,
+                    topSupply
+                });
+            };
+
+            const captureDashboard = async (scale = 2) => {
+                if (!dashboardRef.current || !window.html2canvas) throw new Error("Ferramenta de captura não carregada.");
+                
+                // Wait for fonts to load
+                await document.fonts.ready;
+
+                return await window.html2canvas(dashboardRef.current, {
+                    scale: scale,
+                    useCORS: true,
+                    allowTaint: false,
+                    logging: false,
+                    backgroundColor: '#f8fafc', // Ensure white background, not transparent
+                    width: dashboardRef.current.scrollWidth,
+                    height: dashboardRef.current.scrollHeight,
+                    windowWidth: dashboardRef.current.scrollWidth,
+                    windowHeight: dashboardRef.current.scrollHeight,
+                    x: 0,
+                    y: 0,
+                    onclone: (clonedDoc) => {
+                        // CRITICAL: Stop all animations in the clone to prevent ghosting/fading text
+                        const style = clonedDoc.createElement('style');
+                        style.innerHTML = '* { animation: none !important; transition: none !important; opacity: 1 !important; }';
+                        clonedDoc.body.appendChild(style);
+                    }
+                });
+            };
+
+            const downloadImage = async () => {
+                try {
+                    setIsExporting(true);
+                    // Increased delay to 1.5s to ensure layout transition (sidebar hiding) is 100% complete
+                    await new Promise(resolve => setTimeout(resolve, 1500)); 
+                    
+                    let canvas;
+                    try {
+                        canvas = await captureDashboard(3);
+                    } catch (e) {
+                        console.warn("Falha com escala 3x, tentando 2x...", e);
+                        canvas = await captureDashboard(2);
+                    }
+
+                    const link = document.createElement('a');
+                    link.download = `J7_Relatorio_${profile}_${new Date().toISOString().slice(0,10)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                } catch (err) {
+                    console.error("Erro ao gerar imagem:", err);
+                    alert("Não foi possível gerar a imagem. Verifique se há bloqueadores de script ativos.");
+                } finally {
+                    setIsExporting(false);
+                }
+            };
+
+            const downloadSmartPDF = async () => {
+                const jsPDF = getJsPDF();
+                if (!jsPDF) {
+                    alert("Biblioteca PDF não carregada.");
+                    return;
+                }
+
+                try {
+                    setIsExporting(true);
+                    // Increased delay to 1.5s to ensure layout transition is 100% complete
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    let canvas;
+                    try {
+                        canvas = await captureDashboard(2);
+                    } catch (e) {
+                        console.warn("Falha com escala 2x para PDF, tentando 1.5x...", e);
+                        canvas = await captureDashboard(1.5);
+                    }
+
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = canvas.width;
+                    const imgHeight = canvas.height;
+
+                    const pdfWidth = 210; // A4 Width in mm
+                    const pdfHeight = (imgHeight * pdfWidth) / imgWidth;
+
+                    const doc = new jsPDF({
+                        orientation: pdfHeight > pdfWidth ? 'p' : 'l',
+                        unit: 'mm',
+                        format: [pdfWidth, pdfHeight + 10]
+                    });
+
+                    doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    doc.save(`J7_Relatorio_${profile}_Visual.pdf`);
+                } catch (err) {
+                    console.error("Erro ao gerar PDF:", err);
+                    alert("Erro ao criar PDF. Tente a opção 'Imagem HQ'.");
+                } finally {
+                    setIsExporting(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+                
+                {/* SIDEBAR */}
+                <aside className={`fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-20 flex flex-col shadow-2xl transition-transform duration-300 ${isExporting ? '-translate-x-full' : 'translate-x-0'}`}>
+                    <div className="p-6 border-b border-slate-800 bg-slate-950">
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-slate-900 font-bold text-xl">J7</div>
+                        <div>
+                            <h1 className="text-lg font-bold tracking-tight text-white">A GUILDA</h1>
+                            <p className="text-[10px] text-amber-500 font-semibold tracking-widest uppercase">Data Intelligence</p>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto py-6 px-5 space-y-8">
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Users size={14}/> Perfil de Análise
+                            </label>
+                            <div className="relative">
+                                <select 
+                                value={profile} 
+                                onChange={(e) => setProfile(e.target.value)}
+                                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none appearance-none font-medium text-slate-200"
+                                >
+                                {Object.keys(PROFILES).map(k => <option key={k} value={k}>{k}</option>)}
+                                </select>
+                                <div className="absolute right-3 top-3.5 pointer-events-none text-slate-400">▼</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <FileText size={14}/> Fonte de Dados
+                            </label>
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className={`relative border-2 border-dashed rounded-xl p-4 transition-all duration-300 ${fileName ? 'border-green-500 bg-green-500/10' : 'border-slate-700 hover:border-amber-500 bg-slate-800/50'}`}>
+                                    <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => {
+                                        const f = e.target.files?.[0];
+                                        if(f) {
+                                            setFileName(f.name);
+                                            const r = new FileReader();
+                                            r.onload = (ev) => setFileContent(ev.target?.result);
+                                            r.readAsText(f);
+                                        }
+                                    }} />
+                                    <div className="flex flex-col items-center text-center">
+                                        {fileName ? (
+                                            <>
+                                                <CheckCircle className="text-green-500 mb-2" size={24} />
+                                                <p className="text-xs font-bold text-green-400 break-all line-clamp-1">{fileName}</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload className="text-amber-500 mb-2" size={24} />
+                                                <p className="text-xs font-bold text-slate-200">Carregar .TXT</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        setFileName("DEMO_DATA.txt");
+                                        setFileContent(generateMockData(profile));
+                                    }}
+                                    className="w-full text-[10px] text-slate-500 hover:text-slate-300 py-2 transition text-center flex items-center justify-center gap-1"
+                                >
+                                    <LayoutDashboard size={12} />
+                                    Usar Dados de Teste (Demo)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-slate-800">
+                            <button 
+                                onClick={processData}
+                                disabled={isProcessing || !fileContent}
+                                className={`w-full py-4 rounded-lg shadow-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all duration-300
+                                    ${isProcessing || !fileContent ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white'}`}
+                            >
+                                {isProcessing ? <Activity className="animate-spin" size={18}/> : <Target size={18} />}
+                                PROCESSAR DADOS
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                {/* MAIN CONTENT */}
+                <main className={`transition-all duration-300 p-10 ${isExporting ? 'ml-0 w-full' : 'ml-72'}`} ref={dashboardRef}>
+                    <header className="flex justify-between items-start mb-10">
+                        {isExporting ? (
+                             <div className="w-full border-b-2 border-amber-500 pb-6 mb-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h1 className="text-4xl font-bold text-slate-900 tracking-tight">RELATÓRIO DE MERCADO</h1>
+                                        <p className="text-amber-600 font-bold tracking-widest uppercase mt-1 text-sm">GUILDA J7 • INTELIGÊNCIA COMERCIAL</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm font-bold text-slate-500 uppercase">PERFIL</div>
+                                        <div className="text-2xl font-bold text-slate-800">{PROFILES[profile] ? profile : profile}</div>
+                                        <div className="text-xs text-slate-400 mt-1">{new Date().toLocaleDateString()} • {new Date().toLocaleTimeString()}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <h2 className="text-3xl font-light text-slate-900">Dashboard de Consultoria</h2>
+                                <div className="text-slate-500 mt-2 flex items-center gap-2 text-sm">
+                                    Status: <span className="text-green-600 font-bold">ONLINE</span>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {analysis && !isExporting && (
+                            <div className="flex gap-2">
+                                <button onClick={downloadImage} className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-lg shadow-sm flex items-center gap-2 transition text-sm font-medium" title="Salvar como Imagem (PNG)">
+                                    <ImageIcon size={18} /> Imagem HQ
+                                </button>
+                                <button onClick={downloadSmartPDF} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 transition text-sm font-medium" title="Gerar Relatório Visual (PDF)">
+                                    <FileDown size={18} /> PDF Visual
+                                </button>
+                            </div>
+                        )}
+                        {isExporting && (
+                            <div className="bg-amber-100 text-amber-800 px-6 py-3 rounded-lg flex items-center gap-3 animate-pulse">
+                                <Camera size={20} /> Gerando captura de alta resolução...
+                            </div>
+                        )}
+                    </header>
+
+                    {!analysis ? (
+                        <div className="flex flex-col items-center justify-center h-[50vh] border-2 border-dashed border-slate-300 rounded-2xl bg-slate-100/50">
+                            <div className="p-6 bg-white rounded-full shadow-sm mb-4"><LayoutDashboard size={48} className="text-slate-300"/></div>
+                            <h3 className="text-xl font-semibold text-slate-700">Aguardando Dados</h3>
+                            <p className="text-slate-500 mt-2">Carregue o log na barra lateral.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-8 animate-fade-in pb-10">
+                            
+                            {/* 1. EXECUTIVE KPIS */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                {[
+                                    { label: "Volume Total", val: analysis.totalVolume, icon: Activity, color: "blue" },
+                                    { label: "Sentimento", val: analysis.sentiment.label, icon: Flame, color: analysis.sentiment.score > 60 ? "red" : "green" },
+                                    { label: "Oportunidades", val: analysis.arbitrageOps.length, icon: Scale, color: "amber" },
+                                    { label: "Itens em Alta", val: analysis.velocity.length, icon: TrendingUp, color: "purple" }
+                                ].map((kpi, i) => (
+                                    <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                                        <div className={`w-10 h-10 rounded-lg bg-${kpi.color}-50 flex items-center justify-center text-${kpi.color}-600 mb-4`}>
+                                            <kpi.icon size={20} />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-slate-800">{kpi.val}</h3>
+                                        <p className="text-xs text-slate-500 uppercase tracking-wider mt-1">{kpi.label}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* 1.5 TOP ITEMS ROW (NEW) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* WTB - Demand */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-500 border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <ShoppingBag size={20} className="text-blue-500"/> Top Demanda (WTB)
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {analysis.topDemand.length > 0 ? analysis.topDemand.map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center border-b border-slate-50 last:border-0 pb-2 last:pb-0">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="w-6 h-6 rounded bg-blue-50 text-blue-600 text-xs flex items-center justify-center font-bold">#{i+1}</span>
+                                                    <span className="font-medium text-slate-700">{item.product}</span>
+                                                </div>
+                                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">{item.count} reqs</span>
+                                            </div>
+                                        )) : <p className="text-sm text-slate-400 italic">Sem dados de demanda.</p>}
+                                    </div>
+                                </div>
+
+                                {/* WTS - Supply */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-orange-500 border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <Tag size={20} className="text-orange-500"/> Top Oferta (WTS)
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {analysis.topSupply.length > 0 ? analysis.topSupply.map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center border-b border-slate-50 last:border-0 pb-2 last:pb-0">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="w-6 h-6 rounded bg-orange-50 text-orange-600 text-xs flex items-center justify-center font-bold">#{i+1}</span>
+                                                    <span className="font-medium text-slate-700">{item.product}</span>
+                                                </div>
+                                                <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full">{item.count} offers</span>
+                                            </div>
+                                        )) : <p className="text-sm text-slate-400 italic">Sem dados de oferta.</p>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 2. ARBITRAGE (Full Width) */}
+                            {analysis.arbitrageOps.length > 0 && (
+                                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-xl border border-emerald-100 shadow-sm">
+                                    <h3 className="font-bold text-emerald-900 text-lg flex items-center gap-2 mb-4">
+                                        <Scale size={20}/> Arbitragem (Lucro Rápido)
+                                    </h3>
+                                    <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-emerald-100 text-emerald-800 uppercase text-xs font-semibold">
+                                                <tr>
+                                                    <th className="px-4 py-3">Item</th>
+                                                    <th className="px-4 py-3">Compra (Supply)</th>
+                                                    <th className="px-4 py-3">Venda (Demand)</th>
+                                                    <th className="px-4 py-3 text-right">Lucro</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-emerald-50">
+                                                {analysis.arbitrageOps.slice(0, 5).map((op, i) => (
+                                                    <tr key={i} className="hover:bg-emerald-50/50">
+                                                        <td className="px-4 py-3 font-bold">{op.product}</td>
+                                                        <td className="px-4 py-3 text-slate-600">{op.buyFrom} <span className="bg-red-50 text-red-600 px-1 rounded text-xs">@{op.buyPrice}</span></td>
+                                                        <td className="px-4 py-3 text-slate-600">{op.sellTo} <span className="bg-green-50 text-green-600 px-1 rounded text-xs">@{op.sellPrice}</span></td>
+                                                        <td className="px-4 py-3 text-right font-bold text-emerald-600">+{op.margin.toFixed(1)} ({op.roi.toFixed(0)}%)</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 3. INTELLIGENCE GRID (3 Cols) */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                
+                                {/* PVI Velocity */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <TrendingUp size={18} className="text-purple-500"/> Trending (PVI)
+                                    </h3>
+                                    <div className="space-y-3 h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        {analysis.velocity.length > 0 ? analysis.velocity.slice(0,10).map((v, i) => (
+                                            <div key={i} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                                <span className="font-medium text-slate-700">{v.product}</span>
+                                                <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-bold">+{((v.pvi-1)*100).toFixed(0)}%</span>
+                                            </div>
+                                        )) : <p className="text-slate-400 text-sm text-center pt-10">Sem mudanças bruscas de tendência.</p>}
+                                    </div>
+                                </div>
+
+                                {/* Whales */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <Zap size={18} className="text-yellow-500"/> Top Compradores
+                                    </h3>
+                                    <div className="space-y-3 h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        {analysis.persistenceList.slice(0,10).map((p, i) => (
+                                            <div key={i} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                                <div>
+                                                    <div className="font-bold text-slate-700">{p.player}</div>
+                                                    <div className="text-xs text-slate-400">{p.topItem}</div>
+                                                </div>
+                                                <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs">{p.count}x</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Competitors */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <Briefcase size={18} className="text-blue-500"/> Top Vendedores
+                                    </h3>
+                                    <div className="space-y-3 h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        {analysis.competitors.slice(0,10).map((c, i) => (
+                                            <div key={i} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                                                <div>
+                                                    <div className="font-bold text-slate-700">{c.player}</div>
+                                                    <div className="text-xs text-slate-400">{c.strategy}</div>
+                                                </div>
+                                                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">{c.volume} vol</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 4. VISUAL ANALYTICS */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Quality Curve */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                        <Award size={18} className="text-indigo-500"/> Valor por Qualidade (Tiers)
+                                    </h3>
+                                    <div className="h-64">
+                                        {analysis.tierData.some(t=>t.count>0) ? (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={analysis.tierData}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                                                    <XAxis dataKey="name" fontSize={10} tick={{fill:'#94a3b8'}}/>
+                                                    <YAxis fontSize={10} tick={{fill:'#94a3b8'}}/>
+                                                    <Tooltip cursor={{fill:'#f1f5f9'}} contentStyle={{borderRadius:'8px'}}/>
+                                                    <Bar dataKey="avgPrice" fill="#6366f1" radius={[4,4,0,0]} barSize={40} name="Preço Médio" />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        ) : (
+                                            <div className="h-full flex items-center justify-center text-slate-400 text-sm border border-dashed rounded">
+                                                Sem dados de QL ("90ql", "ql 90").
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Time History */}
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                                    <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                        <Activity size={18} className="text-slate-500"/> Histórico Temporal
+                                    </h3>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <ComposedChart data={analysis.trends}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                                                <XAxis dataKey="date" fontSize={10} tickFormatter={(v)=>v.slice(5)} tick={{fill:'#94a3b8'}}/>
+                                                <YAxis yAxisId="left" fontSize={10} tick={{fill:'#94a3b8'}}/>
+                                                <YAxis yAxisId="right" orientation="right" fontSize={10} tick={{fill:'#94a3b8'}}/>
+                                                <Tooltip contentStyle={{borderRadius:'8px'}}/>
+                                                <Bar yAxisId="right" dataKey="volume" fill="#e2e8f0" barSize={10} radius={[2,2,0,0]} name="Vol" />
+                                                <Line yAxisId="left" type="monotone" dataKey="avgPrice" stroke="#3b82f6" strokeWidth={2} dot={false} name="Preço" />
+                                            </ComposedChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="text-center text-xs text-slate-400 py-4">
+                                {isExporting ? "Relatório gerado automaticamente por J7 Engine. Dados confidenciais." : "Jotasiete Engine v3.3 | Optimized Layout"}
+                            </div>
+                        </div>
+                    )}
+                </main>
+                </div>
+            );
+        };
+
+        const container = document.getElementById("root");
+        const root = createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>

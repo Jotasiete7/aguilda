@@ -40,7 +40,7 @@ const SatView = () => {
             {/* Main Content - Iframe */}
             <div className="satview-main">
                 <iframe
-                    src="/satview/index.html"
+                    src={`${import.meta.env.BASE_URL}satview/index.html`}
                     title="Harmony SatView"
                 />
             </div>

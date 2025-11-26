@@ -25,7 +25,7 @@ const Consultancy = () => {
             {/* Main Content - Iframe */}
             <div className="consultancy-main">
                 <iframe
-                    src="/consultoria.html"
+                    src={`${import.meta.env.BASE_URL}consultoria.html`}
                     title="Consultoria"
                     style={{
                         width: '100%',
