@@ -369,11 +369,11 @@ transform: scale(1.5);
         map.fitBounds([[0, 0], [MAP_SIZE, MAP_SIZE]]);
 
         var layerTerreno = L.tileLayer('tiles_terreno/{z}/{x}/{y}.png', {
-            minZoom: 0, maxZoom: 4, tileSize: 256, noWrap: true, tms: false, bounds: [[0, 0], [MAP_SIZE, MAP_SIZE]]
+            minZoom: 0, maxZoom: 4, tileSize: 256, noWrap: true, tms: true, bounds: [[0, 0], [MAP_SIZE, MAP_SIZE]]
         }).addTo(map);
 
         var layerTopo = L.tileLayer('tiles_topo/{z}/{x}/{y}.png', {
-            minZoom: 0, maxZoom: 4, tileSize: 256, noWrap: true, tms: false, bounds: [[0, 0], [MAP_SIZE, MAP_SIZE]]
+            minZoom: 0, maxZoom: 4, tileSize: 256, noWrap: true, tms: true, bounds: [[0, 0], [MAP_SIZE, MAP_SIZE]]
         });
 
         var editMode = false;
