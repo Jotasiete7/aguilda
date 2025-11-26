@@ -2,7 +2,7 @@
 
 **Status:** ✅ Funcional | ⚠️ CSS com limitações conhecidas
 
-Um sistema de gerenciamento de dados e ferramentas para o jogo **Nightfall Invasion (NFI)**, desenvolvido com React + Vite e design inspirado em "Ancient Book".
+Um sistema de gerenciamento de dados e ferramentas para o jogo **Wurm Online (NFI)**, desenvolvido com React + Vite e design inspirado em "Ancient Book".
 
 ---
 
